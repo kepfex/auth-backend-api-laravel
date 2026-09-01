@@ -18,7 +18,7 @@ class AcademicYearController extends Controller
     public function index()
     {
         $academicYears = AcademicYear::query()
-        ->orderByDesc('start_date')
+        ->orderByDesc('name')
         ->paginate(10);
 
         return AcademicYearResource::collection($academicYears);

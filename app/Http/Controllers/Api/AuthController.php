@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\AcademicYearResource;
+use App\Models\AcademicYear;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,7 +61,7 @@ class AuthController extends Controller
         Auth::logout();
 
         return response()->json([
-            'message' => 'Usuario desconectado correctamente'
+            'message' => 'Sesión cerrada correctamente'
         ]);
     }
 
@@ -69,14 +71,20 @@ class AuthController extends Controller
         return $this->respondWithToken(Auth::refresh());
     }
 
-    // Función privada para formatear la respuesta del token
-    protected function respondWithToken(string $token)
+    // Respuesta unificada: token + user + año académico activo
+    protected function respondWithToken(string $token, int $status = 200)
     {
+        // Busca el año activo; si no hay ninguno, toma el más reciente por nombre
+        $academicYear = AcademicYear::currentAcademicYear();
+        
         return response()->json([
             'token' => $token,
             'token_type' => 'bearer',
             'expires_in' => Auth::factory()->getTTL() * 60,
             'user'       => Auth::user(),
-        ]);
+            'academic_year' => $academicYear
+                ? new AcademicYearResource($academicYear)
+                : null,
+        ], $status);
     }
 }
