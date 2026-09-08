@@ -13,7 +13,16 @@ return new class extends Migration
     {
         Schema::create('grades', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('educational_level_id')
+                ->constrained('educational_levels')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->string('name', 50);
+            $table->unsignedTinyInteger('order');
             $table->timestamps();
+
+            $table->unique(['educational_level_id', 'name']);
+            $table->unique(['educational_level_id', 'order']);
         });
     }
 

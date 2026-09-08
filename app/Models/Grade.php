@@ -2,9 +2,30 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Override;
 
 class Grade extends Model
 {
-    //
+    use HasFactory;
+
+    protected $fillable = [
+        'educational_level_id',
+        'name',
+        'order',
+    ];
+
+    #[Override]
+    protected function casts(): array
+    {
+        return [
+            'order' => 'integer',
+        ];
+    }
+
+    public function educationalLevel(): BelongsTo {
+        return $this->belongsTo(EducationalLevel::class);
+    }
 }

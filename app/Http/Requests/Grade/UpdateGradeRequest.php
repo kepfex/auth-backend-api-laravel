@@ -4,6 +4,7 @@ namespace App\Http\Requests\Grade;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateGradeRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class UpdateGradeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,6 +23,7 @@ class UpdateGradeRequest extends FormRequest
      */
     public function rules(): array
     {
+        
         return [
             //
         ];

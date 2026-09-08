@@ -4,6 +4,7 @@ namespace App\Http\Requests\Grade;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreGradeRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class StoreGradeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
