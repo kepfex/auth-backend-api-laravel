@@ -23,9 +23,27 @@ class UpdateGradeRequest extends FormRequest
      */
     public function rules(): array
     {
-        
+        $grade = $this->route('grade');
+        $levelId = $this->input('educational_level_id', $grade->educational_level_id);
+
         return [
-            //
+            'educational_level_id' => ['sometimes', 'exists:educational_levels,id'],
+            'name' => [
+                'sometimes',
+                'string',
+                'max:50',
+                Rule::unique('grades')
+                    ->where(fn ($query) => $query->where('educational_level_id', $levelId))
+                    ->ignore($grade->id),
+            ],
+            'order' => [
+                'sometimes',
+                'integer',
+                'min:1',
+                Rule::unique('grades')
+                    ->where(fn ($query) => $query->where('educational_level_id', $levelId))
+                    ->ignore($grade->id),
+            ],
         ];
     }
 }
