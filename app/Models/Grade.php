@@ -13,6 +13,7 @@ class Grade extends Model
 
     protected $fillable = [
         'educational_level_id',
+        'code',
         'name',
         'order',
     ];

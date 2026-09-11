@@ -12,6 +12,7 @@ class EducationalLevel extends Model
     use HasFactory;
 
     protected $fillable = [
+        'code',
         'name',
         'order',
     ];

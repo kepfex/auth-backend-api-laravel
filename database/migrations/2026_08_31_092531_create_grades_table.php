@@ -17,12 +17,20 @@ return new class extends Migration
                 ->constrained('educational_levels')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+            $table->string('code', 20)->unique();
             $table->string('name', 50);
             $table->unsignedTinyInteger('order');
             $table->timestamps();
 
-            $table->unique(['educational_level_id', 'name']);
-            $table->unique(['educational_level_id', 'order']);
+            $table->unique(
+                ['educational_level_id', 'name'],
+                'uk_level_grade_name'
+            );
+
+            $table->unique(
+                ['educational_level_id', 'order'],
+                'uk_level_grade_order'
+            );
         });
     }
 
