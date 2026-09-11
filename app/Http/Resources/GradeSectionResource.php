@@ -19,7 +19,7 @@ class GradeSectionResource extends JsonResource
             'shift'         => $this->shift,
             'capacity'      => $this->capacity,
             'is_active'     => $this->is_active,
-            'academic_year' => new AcademicYearResource($this->whenLoaded('academic_year')),
+            'academic_year' => new AcademicYearResource($this->whenLoaded('academicYear')),
             'grade'         => new GradeResource($this->whenLoaded('grade')),
             'section'       => new SectionResource($this->whenLoaded('section')),
             'created_at'    => $this->created_at?->toISOString(),

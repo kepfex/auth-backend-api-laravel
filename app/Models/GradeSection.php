@@ -31,7 +31,7 @@ class GradeSection extends Model
     }
 
     public function grade(): BelongsTo {
-        return $this->belongsTo(Section::class);
+        return $this->belongsTo(Grade::class);
     }
 
     public function section(): BelongsTo {
