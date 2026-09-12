@@ -25,7 +25,7 @@ class SectionController extends Controller
     public function store(Request $request): SectionResource
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:15', 'unique:sections,name'],
+            'name' => ['required', 'string', 'max:50', 'unique:sections,name'],
         ]);
 
         return new SectionResource(Section::create($validated));
@@ -45,7 +45,7 @@ class SectionController extends Controller
     public function update(Request $request, Section $section): SectionResource
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'size:1', 'unique:sections,name,' . $section->id],
+            'name' => ['required', 'string', 'max:50', 'unique:sections,name,' . $section->id],
         ]);
 
         $section->update($validated);

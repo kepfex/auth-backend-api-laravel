@@ -25,11 +25,18 @@ class StoreGradeRequest extends FormRequest
     {
         return [
             'educational_level_id' => ['required', 'exists:educational_levels,id'],
+            'code' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('grades', 'code'),
+            ],
             'name' => [
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('grades')->where(fn ($query) => 
+                Rule::unique('grades')->where(
+                    fn($query) =>
                     $query->where('educational_level_id', $this->input('educational_level_id'))
                 ),
             ],
@@ -37,7 +44,8 @@ class StoreGradeRequest extends FormRequest
                 'required',
                 'integer',
                 'min:1',
-                Rule::unique('grades')->where(fn ($query) => 
+                Rule::unique('grades')->where(
+                    fn($query) =>
                     $query->where('educational_level_id', $this->input('educational_level_id'))
                 ),
             ],

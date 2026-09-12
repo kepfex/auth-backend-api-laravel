@@ -28,12 +28,18 @@ class UpdateGradeRequest extends FormRequest
 
         return [
             'educational_level_id' => ['sometimes', 'exists:educational_levels,id'],
+            'code' => [
+                'sometimes',
+                'string',
+                'max:20',
+                Rule::unique('grades', 'code')->ignore($grade->id),
+            ],
             'name' => [
                 'sometimes',
                 'string',
                 'max:50',
                 Rule::unique('grades')
-                    ->where(fn ($query) => $query->where('educational_level_id', $levelId))
+                    ->where(fn($query) => $query->where('educational_level_id', $levelId))
                     ->ignore($grade->id),
             ],
             'order' => [
@@ -41,7 +47,7 @@ class UpdateGradeRequest extends FormRequest
                 'integer',
                 'min:1',
                 Rule::unique('grades')
-                    ->where(fn ($query) => $query->where('educational_level_id', $levelId))
+                    ->where(fn($query) => $query->where('educational_level_id', $levelId))
                     ->ignore($grade->id),
             ],
         ];

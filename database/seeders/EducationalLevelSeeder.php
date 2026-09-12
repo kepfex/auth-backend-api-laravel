@@ -16,52 +16,63 @@ class EducationalLevelSeeder extends Seeder
     {
         $levels = [
             [
+                'code'  => 'INI',
                 'name'  => 'Inicial',
                 'order' => 1,
                 'grades' => [
-                    ['name' => '3 años', 'order' => 1],
-                    ['name' => '4 años', 'order' => 2],
-                    ['name' => '5 años', 'order' => 3],
+                    ['code'  => 'INI-03', 'name' => '3 años', 'order' => 1],
+                    ['code'  => 'INI-04', 'name' => '4 años', 'order' => 2],
+                    ['code'  => 'INI-05', 'name' => '5 años', 'order' => 3],
                 ],
             ],
             [
+                'code'  => 'PRI',
                 'name'  => 'Primaria',
                 'order' => 2,
                 'grades' => [
-                    ['name' => 'Primero', 'order' => 1],
-                    ['name' => 'Segundo', 'order' => 2],
-                    ['name' => 'Tercero', 'order' => 3],
-                    ['name' => 'Cuarto', 'order' => 4],
-                    ['name' => 'Quinto', 'order' => 5],
-                    ['name' => 'Sexto', 'order' => 6],
+                    ['code'  => 'PRI-01', 'name' => 'Primero', 'order' => 1],
+                    ['code'  => 'PRI-02', 'name' => 'Segundo', 'order' => 2],
+                    ['code'  => 'PRI-03', 'name' => 'Tercero', 'order' => 3],
+                    ['code'  => 'PRI-04', 'name' => 'Cuarto', 'order' => 4],
+                    ['code'  => 'PRI-05', 'name' => 'Quinto', 'order' => 5],
+                    ['code'  => 'PRI-06', 'name' => 'Sexto', 'order' => 6],
                 ],
             ],
             [
+                'code'  => 'SEC',
                 'name'  => 'Secundaria',
                 'order' => 3,
                 'grades' => [
-                    ['name' => 'Primero', 'order' => 1],
-                    ['name' => 'Segundo', 'order' => 2],
-                    ['name' => 'Tercero', 'order' => 3],
-                    ['name' => 'Cuarto', 'order' => 4],
-                    ['name' => 'Quinto', 'order' => 5],
+                    ['code'  => 'SEC-01', 'name' => 'Primero', 'order' => 1],
+                    ['code'  => 'SEC-02', 'name' => 'Segundo', 'order' => 2],
+                    ['code'  => 'SEC-03', 'name' => 'Tercero', 'order' => 3],
+                    ['code'  => 'SEC-04', 'name' => 'Cuarto', 'order' => 4],
+                    ['code'  => 'SEC-05', 'name' => 'Quinto', 'order' => 5],
                 ],
             ],
         ];
 
         foreach ($levels as $levelData) {
-            $level = EducationalLevel::firstOrCreate(
-                ['name' => $levelData['name']], 
-                ['order' => $levelData['order']] 
+            $level = EducationalLevel::updateOrCreate(
+                [
+                    'code' => $levelData['code'],
+                ],
+                [
+                    'name' => $levelData['name'],
+                    'order' => $levelData['order'],
+                ]
             );
 
             foreach ($levelData['grades'] as $gradeData) {
-                Grade::firstOrCreate(
+                Grade::updateOrCreate(
                     [
-                        'educational_level_id'  => $level->id,
-                        'name'                  => $gradeData['name'],
+                        'code' => $gradeData['code'],
                     ],
-                    ['order' => $gradeData['order']]
+                    [
+                        'educational_level_id' => $level->id,
+                        'name' => $gradeData['name'],
+                        'order' => $gradeData['order'],
+                    ]
                 );
             }
         }

@@ -29,6 +29,7 @@ class EducationalLevelController extends Controller
     public function store(Request $request): EducationalLevelResource
     {
         $validated = $request->validate([
+            'code' => ['required', 'string', 'max:10', 'unique:educational_levels,code'],
             'name' => ['required', 'string', 'max:50', 'unique:educational_levels,name'],
             'order' => ['required', 'integer', 'unique:educational_levels,order'],
         ]);
@@ -52,6 +53,7 @@ class EducationalLevelController extends Controller
     public function update(Request $request, EducationalLevel $educationalLevel): EducationalLevelResource
     {
         $validated = $request->validate([
+            'code' => ['sometimes',  'string', 'max:10', 'unique:educational_levels,code,' . $educationalLevel->id,],
             'name'  => ['sometimes', 'string', 'max:50', 'unique:educational_levels,name,' . $educationalLevel->id],
             'order' => ['sometimes', 'integer', 'unique:educational_levels,order,' . $educationalLevel->id],
         ]);

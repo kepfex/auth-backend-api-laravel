@@ -17,6 +17,7 @@ class GradeResource extends JsonResource
         return [
             'id'                    => $this->id,
             'educational_level_id'  => $this->educational_level_id,
+            'code'                  => $this->code,
             'name'                  => $this->name,
             'order'                 => $this->order,
             'educational_level'     => new EducationalLevelResource($this->whenLoaded('educationalLevel')),

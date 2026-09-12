@@ -31,43 +31,38 @@ class GradeSectionSeeder extends Seeder
         |--------------------------------------------------------------------------
         | Configuración de grados y secciones
         |--------------------------------------------------------------------------
-        |
-        | Inicial: 3, 4 y 5 años
-        | Primaria: 1° a 6° grado
-        | Secundaria:
-        |   1° -> A-E
-        |   2° -> A-E
-        |   3° -> A-F
-        |   4° -> A-E
-        |   5° -> A-E
-        |
         */
 
         $gradeSections = [
             // Inicial
-            '3 años' => ['Solidaridad'],
-            '4 años' => ['Responsabilidad'],
-            '5 años' => ['Alegria'],
+            'INI-03' => ['Solidaridad'],
+            'INI-04' => ['Responsabilidad'],
+            'INI-05' => ['Alegria'],
 
             // Primaria
-            'Primero' => ['A', 'B', 'C'],
-            'Segundo' => ['A', 'B', 'C'],
-            'Tercero' => ['A', 'B', 'C'],
-            'Cuarto' => ['A', 'B', 'C'],
-            'Quinto' => ['A', 'B', 'C'],
-            'Sexto' => ['A', 'B', 'C'],
+            'PRI-01' => ['A', 'B', 'C'],
+            'PRI-02' => ['A', 'B', 'C'],
+            'PRI-03' => ['A', 'B', 'C'],
+            'PRI-04' => ['A', 'B', 'C'],
+            'PRI-05' => ['A', 'B', 'C'],
+            'PRI-06' => ['A', 'B', 'C'],
 
             // Secundaria
+            'SEC-01' => ['A', 'B', 'C', 'D', 'E'],
+            'SEC-02' => ['A', 'B', 'C', 'D', 'E'],
+            'SEC-03' => ['A', 'B', 'C', 'D', 'E'],
+            'SEC-04' => ['A', 'B', 'C', 'D', 'E'],
+            'SEC-05' => ['A', 'B', 'C', 'D', 'E'],
         ];
 
-        foreach ($gradeSections as $gradeName => $sections) {
+        foreach ($gradeSections as $gradeCode => $sections) {
 
             // Buscar el grado
-            $grade = Grade::where('name', $gradeName)->first();
+            $grade = Grade::where('code', $gradeCode)->first();
 
             if (!$grade) {
                 $this->command->warn(
-                    "No se encontró el grado: {$gradeName}"
+                    "No se encontró el grado: {$gradeCode}"
                 );
 
                 continue;

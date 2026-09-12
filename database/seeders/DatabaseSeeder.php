@@ -24,9 +24,11 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
+            PositionSeeder::class,
             AcademicYearSeeder::class,
             EducationalLevelSeeder::class,
             SectionSeeder::class,
+            GradeSectionSeeder::class,
         ]);
     }
 }

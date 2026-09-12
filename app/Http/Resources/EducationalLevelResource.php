@@ -16,9 +16,13 @@ class EducationalLevelResource extends JsonResource
     {
         return [
             'id'        => $this->id,
+            'code'        => $this->code,
             'name'      => $this->name,
             'order'     => $this->order,
-            'grades'    => GradeResource::collection($this->whenLoaded('grades')),
+
+            'grades'    => GradeResource::collection(
+                $this->whenLoaded('grades')
+            ),
             'created_at'=> $this->created_at?->toISOString(),
         ];
     }
