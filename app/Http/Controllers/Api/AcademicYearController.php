@@ -9,17 +9,23 @@ use App\Http\Resources\AcademicYearResource;
 use App\Models\AcademicYear;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class AcademicYearController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = min(
+            max((int) $request->integer('per_page', 10), 1),
+            100
+        );
+
         $academicYears = AcademicYear::query()
-        ->orderByDesc('name')
-        ->paginate(10);
+            ->orderByDesc('name')
+            ->paginate($perPage);
 
         return AcademicYearResource::collection($academicYears);
     }
@@ -47,9 +53,27 @@ class AcademicYearController extends Controller
      */
     public function update(UpdateAcademicYearRequest $request, AcademicYear $academicYear): AcademicYearResource
     {
-        $academicYear->update($request->validated());
+        $validated = $request->validated();
 
-        return new AcademicYearResource($academicYear);   
+        DB::transaction(function () use (
+            $validated,
+            $academicYear
+        ) {
+            if (
+                array_key_exists('is_active', $validated) &&
+                $validated['is_active']
+            ) {
+                AcademicYear::query()
+                    ->whereKeyNot($academicYear->id)
+                    ->where('is_active', true)
+                    ->update([
+                        'is_active' => false,
+                    ]);
+            }
+
+            $academicYear->update($validated);
+        });
+        return new AcademicYearResource($academicYear->refresh());
     }
 
     /**
@@ -58,7 +82,7 @@ class AcademicYearController extends Controller
     public function destroy(AcademicYear $academicYear): Response
     {
         $academicYear->delete();
-        
+
         return response()->noContent();
     }
 }

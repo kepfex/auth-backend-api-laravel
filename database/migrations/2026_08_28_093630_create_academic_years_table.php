@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name', 4)->unique();
             $table->date('start_date');
             $table->date('end_date');
-            $table->boolean('is_active')->default(true);
+            $table->boolean('is_active')->default(false);
             $table->timestamps();
         });
     }

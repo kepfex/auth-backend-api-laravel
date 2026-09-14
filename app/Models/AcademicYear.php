@@ -33,7 +33,6 @@ class AcademicYear extends Model
         // Busca el año activo; si no hay ninguno, toma el más reciente por nombre
         return static::query()
             ->where('is_active', true)
-            ->orderByDesc('name')
             ->first()
             ?? static::query()
                 ->orderByDesc('name')
