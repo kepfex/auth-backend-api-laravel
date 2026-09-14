@@ -31,7 +31,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->unique(['academic_year_id', 'grade_id', 'section_id'], 'uk_academic_grade_section');
+            $table->unique(['academic_year_id', 'grade_id', 'section_id', 'shift'], 'uk_academic_grade_section_shift');
         });
     }
 

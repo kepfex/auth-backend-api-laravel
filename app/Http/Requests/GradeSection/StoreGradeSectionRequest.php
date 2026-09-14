@@ -29,11 +29,14 @@ class StoreGradeSectionRequest extends FormRequest
             'section_id' => [
                 'required',
                 'exists:sections,id',
-                Rule::unique('grade_sections')->where(
-                    fn($query) =>
-                    $query->where('academic_year_id', $this->input('academic_year_id'))
-                        ->where('grade_id', $this->input('grade_id'))
-                ),
+                Rule::unique('grade_sections')
+                    ->where(
+                        fn($query) => $query
+                            ->where('academic_year_id', $this->input('academic_year_id'))
+                            ->where('grade_id', $this->input('grade_id'))
+                            ->where('section_id', $this->section_id)
+                            ->where('shift', $this->shift)
+                    ),
             ],
             'shift' => ['sometimes', Rule::in(['mañana', 'tarde', 'mañana y tarde'])],
             'capacity' => ['sometimes', 'integer', 'min:1', 'max:100'],

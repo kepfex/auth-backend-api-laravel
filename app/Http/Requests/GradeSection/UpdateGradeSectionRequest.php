@@ -26,7 +26,7 @@ class UpdateGradeSectionRequest extends FormRequest
         $gradeSection = $this->route('grade_section');
         $academicYearId = $this->input('academic_year_id', $gradeSection->academic_year_id);
         $gradeId = $this->input('grade_id', $gradeSection->grade_id);
-        
+
         return [
             'academic_year_id' => ['sometimes', 'exists:academic_years,id'],
             'grade_id' => ['sometimes', 'exists:grades,id'],
@@ -35,9 +35,11 @@ class UpdateGradeSectionRequest extends FormRequest
                 'exists:sections,id',
                 Rule::unique('grade_sections')
                     ->where(
-                        fn($query) =>
-                        $query->where('academic_year_id', $academicYearId)
+                        fn($query) => $query
+                            ->where('academic_year_id', $academicYearId)
                             ->where('grade_id', $gradeId)
+                            ->where('section_id', $this->section_id)
+                            ->where('shift', $this->shift)
                     )
                     ->ignore($gradeSection->id),
             ],
