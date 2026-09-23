@@ -7,8 +7,10 @@ use App\Http\Requests\Grade\StoreGradeRequest;
 use App\Http\Requests\Grade\UpdateGradeRequest;
 use App\Http\Resources\GradeResource;
 use App\Models\Grade;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class GradeController extends Controller
 {
@@ -56,8 +58,16 @@ class GradeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Grade $grade)
+    public function destroy(Grade $grade): Response|JsonResponse
     {
+        if ($grade->gradeSections()->exists()) {
+            return response()->json([
+                'message' => 'No se puede eliminar el grado.',
+                'code' => 'GRADE_IN_USE',
+                'details' => 'El grado está siendo utilizado en una o más aulas o secciones del año académico.',
+            ], Response::HTTP_CONFLICT);
+        }
+
         $grade->delete();
 
         return response()->noContent();

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SectionResource;
 use App\Models\Section;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -34,7 +35,7 @@ class SectionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Section $section): SectionResource 
+    public function show(Section $section): SectionResource
     {
         return new SectionResource($section);
     }
@@ -56,8 +57,17 @@ class SectionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Section $section): Response
+    public function destroy(Section $section): Response|JsonResponse
     {
+
+        if ($section->gradeSections()->exists()) {
+            return response()->json([
+                'message' => 'No se puede eliminar la sección.',
+                'code' => 'SECTION_IN_USE',
+                'details' => 'La sección está asociada a uno o más grados.',
+            ], Response::HTTP_CONFLICT);
+        }
+
         $section->delete();
 
         return response()->noContent();
