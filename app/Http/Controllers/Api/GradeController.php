@@ -19,7 +19,9 @@ class GradeController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        $grades = Grade::with('educationalLevel')
+        $grades = Grade::query()
+            ->with('educationalLevel')
+            ->withCount('gradeSections')
             ->orderBy('educational_level_id')
             ->orderBy('order')
             ->get();

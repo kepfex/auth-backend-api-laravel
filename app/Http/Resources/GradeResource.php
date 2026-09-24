@@ -20,6 +20,7 @@ class GradeResource extends JsonResource
             'code'                  => $this->code,
             'name'                  => $this->name,
             'order'                 => $this->order,
+            'grade_sections_count'  => $this->whenCounted('gradeSections'),
             'educational_level'     => new EducationalLevelResource($this->whenLoaded('educationalLevel')),
         ];
     }
