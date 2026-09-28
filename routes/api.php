@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\GradeSectionController;
 use App\Http\Controllers\Api\PositionController;
 use App\Http\Controllers\Api\SectionController;
+use App\Http\Controllers\Api\PersonController;
+use App\Http\Controllers\Api\StudentController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -27,4 +29,6 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('positions', PositionController::class);
     Route::apiResource('sections', SectionController::class);
     Route::apiResource('grade-sections', GradeSectionController::class);
+    Route::apiResource('persons', PersonController::class)->only(['index', 'store', 'show']);
+    Route::apiResource('students', StudentController::class)->only(['index', 'store', 'show', 'update']);
 });
