@@ -29,6 +29,6 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('positions', PositionController::class);
     Route::apiResource('sections', SectionController::class);
     Route::apiResource('grade-sections', GradeSectionController::class);
-    Route::apiResource('persons', PersonController::class)->only(['index', 'store', 'show']);
-    Route::apiResource('students', StudentController::class)->only(['index', 'store', 'show', 'update']);
+    Route::apiResource('persons', PersonController::class);
+    Route::apiResource('students', StudentController::class);
 });

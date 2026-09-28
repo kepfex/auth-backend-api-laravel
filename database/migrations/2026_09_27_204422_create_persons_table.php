@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('persons', function (Blueprint $table) {
             $table->id();
-            $table->string('codument_type', 12);
-            $table->string('codument_number', 20);
+            $table->string('document_type', 12);
+            $table->string('document_number', 20);
             $table->string('first_names', 100);
             $table->string('paternal_surname', 100);
-            $table->string('maternal_surmane', 100);
+            $table->string('maternal_surname', 100);
             $table->string('phone', 20)->nullable();
             $table->string('email', 150)->nullable();
             $table->date('birth_date')->nullable();
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
-            $table->unique(['codument_type', 'document_number']);
+            $table->unique(['document_type', 'document_number']);
             $table->index(['paternal_surname', 'maternal_surname', 'first_names']);
         });
     }

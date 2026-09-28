@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests\Student;
 
+use App\Http\Requests\Person\StorePersonRequest;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreStudentRequest extends FormRequest
 {
@@ -20,14 +23,40 @@ class StoreStudentRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
-    {
+    public function rules(): array {
         return array_merge([
-            'person_id' => ['required_without:person', 'prohibited_with:person', 'integer', Rule::exists('persons', 'id')->whereNull('deleted_at')],
-            'person' => ['required_without:person_id', 'prohibited_with:person_id', 'array'],
-            'student_code' => ['required', 'string', 'max:25', Rule::unique('students', 'student_code')],
-            'status' => ['sometimes', Rule::in(['active', 'inactive'])],
-        ], array_map(fn($rules) => array_merge(['exclude_without:person'], $rules), StorePersonRequest::personRules('person.')));
+            'person_id' => [
+                'required_without:person',
+                'prohibits:person',
+                'integer',
+                Rule::exists('persons', 'id')->whereNull('deleted_at'),
+            ],
+
+            'person' => [
+                'required_without:person_id',
+                'prohibits:person_id',
+                'array',
+            ],
+
+            'student_code' => [
+                'required',
+                'string',
+                'max:25',
+                Rule::unique('students', 'student_code'),
+            ],
+
+            'status' => [
+                'sometimes',
+                Rule::in(['activo', 'inactivo', 'egresado']),
+            ],
+
+        ], array_map(
+            fn($rules) => array_merge(
+                ['exclude_without:person'],
+                $rules
+            ),
+            StorePersonRequest::personRules('person.')
+        ));
     }
 
     protected function prepareForValidation(): void

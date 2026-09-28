@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('students', function (Blueprint $table) {
             $table->id();
             $table->foreignId('person_id')
-                ->unique()
+                ->unique('uk_student_person')
                 ->constrained('persons')
                 ->restrictOnDelete();
-            $table->string('student_code', 25)->unique();
-            $table->string('status', 20)->default('active');
+            $table->string('student_code', 25)->unique('uk_student_code');
+            $table->enum('status', ['activo', 'inactivo', 'egresado'])->default('activo');
             $table->timestamps();
+            
+            // Índice para mejorar búsquedas por estado
             $table->index('status');
         });
     }

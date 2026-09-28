@@ -10,6 +10,8 @@ class Person extends Model
 {
     use SoftDeletes;
 
+    protected $table = 'persons';
+
     protected $fillable = [
         'document_type',
         'document_number',
@@ -24,8 +26,7 @@ class Person extends Model
         'is_active'
     ];
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'birth_date' => 'date:Y-m-d',
             'is_active' => 'boolean'

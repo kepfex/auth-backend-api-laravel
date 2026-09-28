@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Person\StorePersonRequest;
+use App\Http\Requests\Person\UpdatePersonRequest;
 use App\Http\Resources\PersonResource;
 use App\Models\Person;
 use Illuminate\Http\Request;
@@ -49,9 +50,12 @@ class PersonController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Person $person)
-    {
-        //
+    public function update(UpdatePersonRequest $request, Person $person): PersonResource {
+        $person->update($request->validated());
+
+        return new PersonResource(
+            $person->load('student')
+        );
     }
 
     /**
