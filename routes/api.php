@@ -5,10 +5,12 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EducationalLevelController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\GradeSectionController;
+use App\Http\Controllers\Api\GuardianController;
 use App\Http\Controllers\Api\PositionController;
 use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\StudentController;
+use App\Http\Controllers\Api\StudentGuardianController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -31,4 +33,34 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('grade-sections', GradeSectionController::class);
     Route::apiResource('persons', PersonController::class);
     Route::apiResource('students', StudentController::class);
+
+    Route::apiResource('guardians', GuardianController::class)
+        ->only([
+            'store',
+            'show',
+            'update',
+        ]);
+    Route::prefix('students/{student}')
+        ->group(function () {
+
+            Route::get(
+                'guardians',
+                [StudentGuardianController::class, 'index']
+            );
+
+            Route::post(
+                'guardians',
+                [StudentGuardianController::class, 'store']
+            );
+
+            Route::patch(
+                'guardians/{studentGuardian}',
+                [StudentGuardianController::class, 'update']
+            );
+
+            Route::delete(
+                'guardians/{studentGuardian}',
+                [StudentGuardianController::class, 'destroy']
+            );
+        });
 });

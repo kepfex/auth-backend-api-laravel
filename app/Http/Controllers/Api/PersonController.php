@@ -23,9 +23,15 @@ class PersonController extends Controller
         ]);
         if (!isset($filters['document_number'])) return response()->json(['message' => 'Se requiere documento para buscar una persona.'], 422);
 
-        $person = Person::with('student')
+        $person = Person::with([
+            'student',
+            'guardian',
+        ])
             ->where('document_type', $filters['document_type'])
-            ->where('document_number', strtoupper(trim($filters['document_number'])))
+            ->where(
+                'document_number',
+                strtoupper(trim($filters['document_number']))
+            )
             ->first();
 
         return response()->json(['data' => $person ? new PersonResource($person) : null]);
@@ -44,17 +50,24 @@ class PersonController extends Controller
      */
     public function show(Person $person): PersonResource
     {
-        return new PersonResource($person->load('student'));
+        return new PersonResource($person->load([
+            'student',
+            'guardian',
+        ]));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePersonRequest $request, Person $person): PersonResource {
+    public function update(UpdatePersonRequest $request, Person $person): PersonResource
+    {
         $person->update($request->validated());
 
         return new PersonResource(
-            $person->load('student')
+            $person->load([
+                'student',
+                'guardian',
+            ])
         );
     }
 

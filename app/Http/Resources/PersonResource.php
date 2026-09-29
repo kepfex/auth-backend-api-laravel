@@ -27,7 +27,14 @@ class PersonResource extends JsonResource
             'address' => $this->address,
             'sex' => $this->sex,
             'is_active' => $this->is_active,
-            'student_id' => $this->whenLoaded('student', fn() => $this->student?->id),
+            'student_id' => $this->whenLoaded(
+                'student',
+                fn() => $this->student?->id
+            ),
+            'guardian_id' => $this->whenLoaded(
+                'guardian',
+                fn() => $this->guardian?->id
+            ),
         ];
     }
 }
