@@ -30,6 +30,6 @@ class StudentGuardianResource extends JsonResource
             'guardian' => new GuardianResource(
                 $this->whenLoaded('guardian')
             ),
-        ];;
+        ];
     }
 }

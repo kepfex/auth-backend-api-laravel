@@ -27,7 +27,7 @@ class IndexStudentRequest extends FormRequest
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
             'search' => ['sometimes', 'string', 'max:100'],
-            'status' => ['sometimes', Rule::in(['active', 'inactive'])],
+            'status' => ['sometimes', Rule::in(['activo', 'inactivo', 'egresado'])],
         ];
     }
 }
