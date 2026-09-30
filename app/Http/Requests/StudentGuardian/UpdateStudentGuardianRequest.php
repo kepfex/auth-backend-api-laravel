@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\StudentGuardian;
 
+use App\Enums\GuardianRelationship;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,17 +28,7 @@ class UpdateStudentGuardianRequest extends FormRequest
             'relationship' => [
                 'sometimes',
                 'required',
-                Rule::in([
-                    'father',
-                    'mother',
-                    'grandfather',
-                    'grandmother',
-                    'uncle',
-                    'aunt',
-                    'sibling',
-                    'legal_guardian',
-                    'other',
-                ]),
+                Rule::enum(GuardianRelationship::class),
             ],
 
             'is_primary' => [

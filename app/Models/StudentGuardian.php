@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GuardianRelationship;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Override;
@@ -20,6 +21,7 @@ class StudentGuardian extends Model
     protected function casts(): array
     {
         return [
+            'relationship' => GuardianRelationship::class,
             'is_primary' => 'boolean',
             'receives_notifications' => 'boolean',
         ];

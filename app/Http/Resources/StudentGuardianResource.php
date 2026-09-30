@@ -20,10 +20,10 @@ class StudentGuardianResource extends JsonResource
             'student_id' => $this->student_id,
             'guardian_id' => $this->guardian_id,
 
-            'relationship' => $this->relationship,
+            'relationship' => $this->relationship->value,
+            'relationship_label' => $this->relationship->label(),
 
             'is_primary' => $this->is_primary,
-
             'receives_notifications' =>
                 $this->receives_notifications,
 

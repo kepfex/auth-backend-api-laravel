@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\GuardianRelationship;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -24,17 +25,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
 
-            $table->enum('relationship', [
-                'padre',
-                'madre',
-                'abuelo',
-                'abuela',
-                'tío',
-                'tía',
-                'hermano/a',
-                'tutor_legal',
-                'otro',
-            ]);
+            $table->enum('relationship', GuardianRelationship::values());
 
             $table->boolean('is_primary')->default(false);
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\EducationalLevelController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\GradeSectionController;
@@ -25,6 +26,13 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:api')->group(function () {
+    Route::prefix('catalogs')->group(function () {
+        Route::get(
+            'guardian-relationships',
+            [CatalogController::class, 'guardianRelationships']
+        );
+    });
+    
     Route::apiResource('academic-years', AcademicYearController::class);
     Route::apiResource('educational-levels', EducationalLevelController::class);
     Route::apiResource('grades', GradeController::class);
