@@ -25,20 +25,114 @@ class UpdateStudentRequest extends FormRequest
     {
         $student = $this->route('student');
 
+        $personId = $student?->person_id;
+
         return [
             'student_code' => [
                 'sometimes',
-                'required',
                 'string',
-                'max:25',
+                'max:50',
                 Rule::unique('students', 'student_code')
-                    ->ignore($student->id),
+                    ->ignore($student?->id),
             ],
 
             'status' => [
                 'sometimes',
-                'required',
-                Rule::in(['activo', 'inactivo', 'egresado']),
+                Rule::in([
+                    'activo',
+                    'inactivo',
+                    'egresado',
+                ]),
+            ],
+
+            'person' => [
+                'sometimes',
+                'array',
+            ],
+
+            'person.document_type' => [
+                'required_with:person',
+                Rule::in([
+                    'DNI',
+                    'CE',
+                    'PASSPORT',
+                ]),
+            ],
+
+            'person.document_number' => [
+                'required_with:person',
+                'string',
+                'max:20',
+
+                Rule::unique(
+                    'persons',
+                    'document_number',
+                )
+                    ->ignore($personId)
+                    ->where(
+                        fn($query) =>
+                        $query->where(
+                            'document_type',
+                            $this->input(
+                                'person.document_type',
+                            ),
+                        )
+                    ),
+            ],
+
+            'person.first_names' => [
+                'required_with:person',
+                'string',
+                'max:100',
+            ],
+
+            'person.paternal_surname' => [
+                'required_with:person',
+                'string',
+                'max:100',
+            ],
+
+            'person.maternal_surname' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'person.phone' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'person.email' => [
+                'nullable',
+                'email',
+                'max:150',
+            ],
+
+            'person.birth_date' => [
+                'nullable',
+                'date',
+                'before_or_equal:today',
+            ],
+
+            'person.address' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'person.sex' => [
+                'nullable',
+                Rule::in([
+                    'M',
+                    'F',
+                ]),
+            ],
+
+            'person.is_active' => [
+                'sometimes',
+                'boolean',
             ],
         ];
     }

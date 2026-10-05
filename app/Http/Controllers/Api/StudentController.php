@@ -83,18 +83,48 @@ class StudentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateStudentRequest $request, Student $student): StudentResource
-    {
-        // $input = $request->validate([
-        //     'student_code' => ['sometimes', 'required', 'string', 'max:25', Rule::unique('students', 'student_code')->ignore($student->id)],
-        //     'status' => ['sometimes', Rule::in(['activo', 'inactivo', 'egresado'])],
-        // ]);
-        // if (isset($input['student_code'])) $input['student_code'] = strtoupper(trim($input['student_code']));
-        // $student->update($input);
+    public function update(
+        UpdateStudentRequest $request,
+        Student $student
+    ) {
+        $validated =
+            $request->validated();
 
-        $student->update($request->validated());
-        
-        return new StudentResource($student->load('person'));
+        $student = DB::transaction(
+            function () use (
+                $request,
+                $validated,
+                $student
+            ) {
+                if (
+                    isset(
+                        $validated['person']
+                    )
+                ) {
+                    $student->person->update(
+                        $validated['person']
+                    );
+                }
+
+                $student->update(
+                    $request->safe()->only([
+                        'student_code',
+                        'status',
+                    ])
+                );
+
+                return $student
+                    ->fresh()
+                    ->load('person');
+            }
+        );
+
+        return response()->json([
+            'data' =>
+            new StudentResource(
+                $student
+            ),
+        ]);
     }
 
     /**
