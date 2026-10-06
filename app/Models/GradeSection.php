@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Override;
 
 class GradeSection extends Model
@@ -36,5 +37,10 @@ class GradeSection extends Model
 
     public function section(): BelongsTo {
         return $this->belongsTo(Section::class);
+    }
+
+    // Salon de clases puede tener muchas matriculas, pero solo una por estudiante y año académico
+    public function enrollments(): HasMany {
+        return $this->hasMany(Enrollment::class);
     }
 }

@@ -11,14 +11,17 @@ class Student extends Model
 {
     protected $fillable = ['person_id', 'student_code', 'status'];
 
+    // Relación con la tabla persons
     public function person(): BelongsTo {
         return $this->belongsTo(Person::class);
     }
 
+    // Relación con la tabla intermedia student_guardians
     public function studentGuardians(): HasMany {
         return $this->hasMany(StudentGuardian::class);
     }
 
+    // Relación con apoderados a través de la tabla intermedia student_guardians
     public function guardians(): BelongsToMany {
         return $this->belongsToMany(
             Guardian::class,
@@ -30,5 +33,10 @@ class Student extends Model
                 'receives_notifications',
             ])
             ->withTimestamps();
+    }
+
+    // estudiante puede tener muchas matriculas, pero solo una por año académico
+    public function enrollments(): HasMany {
+        return $this->hasMany(Enrollment::class);
     }
 }
