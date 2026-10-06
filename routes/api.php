@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\EducationalLevelController;
+use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\GradeSectionController;
 use App\Http\Controllers\Api\GuardianController;
@@ -31,8 +32,12 @@ Route::middleware('auth:api')->group(function () {
             'guardian-relationships',
             [CatalogController::class, 'guardianRelationships']
         );
+        Route::get(
+            'enrollment-statuses',
+            [CatalogController::class, 'enrollmentStatuses']
+        );
     });
-    
+
     Route::apiResource('academic-years', AcademicYearController::class);
     Route::apiResource('educational-levels', EducationalLevelController::class);
     Route::apiResource('grades', GradeController::class);
@@ -42,12 +47,14 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('persons', PersonController::class);
     Route::apiResource('students', StudentController::class);
 
+    // Apoderados
     Route::apiResource('guardians', GuardianController::class)
         ->only([
             'store',
             'show',
             'update',
         ]);
+
     Route::prefix('students/{student}')
         ->group(function () {
 
@@ -71,4 +78,21 @@ Route::middleware('auth:api')->group(function () {
                 [StudentGuardianController::class, 'destroy']
             );
         });
+
+    // Ruta para matriculas
+    Route::apiResource('enrollments', EnrollmentController::class)
+        ->only([
+            'index',
+            'store',
+            'show',
+            'update',
+        ]);
+
+    // Historial de matriculas de un estudiante 
+    Route::get(
+        'students/{student}/enrollments',
+        [EnrollmentController::class, 'studentHistory']
+    );
+
+
 });

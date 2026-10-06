@@ -27,6 +27,14 @@ class UpdateEnrollmentRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'student_id' => [
+                'prohibited',
+            ],
+
+            'academic_year_id' => [
+                'prohibited',
+            ],
+
             'grade_section_id' => [
                 'sometimes',
                 'integer',
@@ -64,7 +72,7 @@ class UpdateEnrollmentRequest extends FormRequest
                 if (!$enrollment) {
                     return;
                 }
-                
+
                 $academicYearId = $this->integer(
                     'academic_year_id',
                     $enrollment->academic_year_id
@@ -112,6 +120,12 @@ class UpdateEnrollmentRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'student_id.prohibited' =>
+            'El estudiante de una matrícula no puede modificarse.',
+
+            'academic_year_id.prohibited' =>
+            'El año académico de una matrícula no puede modificarse.',
+
             'academic_year_id.exists' =>
             'El año académico seleccionado no existe.',
 

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\EnrollmentStatus;
 use App\Enums\GuardianRelationship;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class CatalogController extends Controller
 {
@@ -13,6 +13,13 @@ class CatalogController extends Controller
     {
         return response()->json([
             'data' => GuardianRelationship::options(),
+        ]);
+    }
+
+    public function enrollmentStatuses()
+    {
+        return response()->json([
+            'data' => EnrollmentStatus::options(),
         ]);
     }
 }
