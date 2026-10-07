@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AcademicYearController;
+use App\Http\Controllers\Api\AttendanceScheduleController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\EducationalLevelController;
@@ -35,6 +36,15 @@ Route::middleware('auth:api')->group(function () {
         Route::get(
             'enrollment-statuses',
             [CatalogController::class, 'enrollmentStatuses']
+        );
+        Route::get(
+            'attendance-schedule-event-types',
+            [CatalogController::class, 'attendanceScheduleEventTypes']
+        );
+
+        Route::get(
+            'weekdays',
+            [CatalogController::class, 'weekdays']
         );
     });
 
@@ -94,5 +104,14 @@ Route::middleware('auth:api')->group(function () {
         [EnrollmentController::class, 'studentHistory']
     );
 
-
+    // Rutas para horarios de asistencia
+    Route::apiResource(
+        'attendance-schedules',
+        AttendanceScheduleController::class
+    )->only([
+        'index',
+        'store',
+        'show',
+        'update',
+    ]);
 });
