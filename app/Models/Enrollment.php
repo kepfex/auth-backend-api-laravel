@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\EnrollmentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Enrollment extends Model
 {
@@ -36,5 +37,10 @@ class Enrollment extends Model
     // Classrroom - Salon de clases
     public function gradeSection(): BelongsTo {
         return $this->belongsTo(GradeSection::class);
+    }
+
+    // Attendance Days - Días de asistencia
+    public function attendanceDays(): HasMany {
+        return $this->hasMany(AttendanceDay::class);
     }
 }

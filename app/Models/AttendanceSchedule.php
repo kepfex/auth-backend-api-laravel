@@ -56,4 +56,11 @@ class AttendanceSchedule extends Model
             ->orderBy('day_of_week')
             ->orderBy('sequence');
     }
+
+    public function attendanceDays(): HasMany
+    {
+        return $this->hasMany(
+            AttendanceDay::class
+        );
+    }
 }

@@ -6,6 +6,7 @@ use App\Enums\AttendanceScheduleEventType;
 use App\Enums\Weekday;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AttendanceScheduleEvent extends Model
 {
@@ -34,6 +35,13 @@ class AttendanceScheduleEvent extends Model
         return $this->belongsTo(
             AttendanceSchedule::class,
             'attendance_schedule_id'
+        );
+    }
+
+    public function attendanceMarks(): HasMany
+    {
+        return $this->hasMany(
+            AttendanceMark::class
         );
     }
 }

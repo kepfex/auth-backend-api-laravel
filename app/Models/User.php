@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -53,12 +54,23 @@ class User extends Authenticatable implements JWTSubject
      *
      * @return mixed
      */    public function getJWTIdentifier()
-    {        
+    {
         return $this->getKey();
     }
 
     public function getJWTCustomClaims(): array
     {
         return [];
+    }
+
+    // Relaciones
+    
+    /* User - Marcas de asistencia registradas */
+    public function recordedAttendanceMarks(): HasMany
+    {
+        return $this->hasMany(
+            AttendanceMark::class,
+            'recorded_by_user_id'
+        );
     }
 }
