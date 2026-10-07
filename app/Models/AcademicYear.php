@@ -44,4 +44,11 @@ class AcademicYear extends Model
     public function enrollments(): HasMany {
         return $this->hasMany(Enrollment::class);
     }
+
+    // Año academico puede tener muchos horarios de asistencia
+    public function attendanceSchedules(): HasMany {
+        return $this->hasMany(AttendanceSchedule::class);
+    }
+
+    
 }

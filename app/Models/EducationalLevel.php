@@ -28,4 +28,9 @@ class EducationalLevel extends Model
     public function grades(): HasMany {
         return $this->hasMany(Grade::class);
     }
+
+    // Nivel educativo puede tener muchos horarios de asistencia
+    public function attendanceSchedules(): HasMany {
+        return $this->hasMany(AttendanceSchedule::class);
+    }
 }

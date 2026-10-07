@@ -43,4 +43,9 @@ class GradeSection extends Model
     public function enrollments(): HasMany {
         return $this->hasMany(Enrollment::class);
     }
+
+    // Salon de clases puede tener muchos horarios de asistencia
+    public function attendanceSchedules(): HasMany {
+        return $this->hasMany(AttendanceSchedule::class);
+    }
 }
