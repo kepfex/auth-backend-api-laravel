@@ -46,4 +46,12 @@ class AttendanceDay extends Model
         )
             ->orderBy('recorded_at');
     }
+
+    // Reacion de uno a muchos con AttendanceJustification
+    public function justifications(): HasMany
+    {
+        return $this->hasMany(
+            AttendanceJustification::class
+        );
+    }
 }

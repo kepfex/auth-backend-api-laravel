@@ -73,4 +73,22 @@ class User extends Authenticatable implements JWTSubject
             'recorded_by_user_id'
         );
     }
+
+    // Relaciones con justificaciones de asistencia
+    public function submittedAttendanceJustifications(): HasMany
+    {
+        return $this->hasMany(
+            AttendanceJustification::class,
+            'submitted_by_user_id'
+        );
+    }
+
+    // Relaciones con justificaciones de asistencia revisadas
+    public function reviewedAttendanceJustifications(): HasMany
+    {
+        return $this->hasMany(
+            AttendanceJustification::class,
+            'reviewed_by_user_id'
+        );
+    }
 }

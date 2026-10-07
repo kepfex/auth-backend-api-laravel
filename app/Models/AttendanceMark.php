@@ -7,6 +7,7 @@ use App\Enums\AttendanceMarkStatus;
 use App\Enums\AttendanceScheduleEventType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AttendanceMark extends Model
 {
@@ -58,6 +59,14 @@ class AttendanceMark extends Model
         return $this->belongsTo(
             User::class,
             'recorded_by_user_id'
+        );
+    }
+
+    // Relacion de uno a muchos con AttendanceJustification
+    public function justifications(): HasMany
+    {
+        return $this->hasMany(
+            AttendanceJustification::class
         );
     }
 }
