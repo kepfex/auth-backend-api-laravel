@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AcademicYearController;
+use App\Http\Controllers\Api\AttendanceDayController;
+use App\Http\Controllers\Api\AttendanceMarkController;
 use App\Http\Controllers\Api\AttendanceScheduleController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
@@ -45,6 +47,21 @@ Route::middleware('auth:api')->group(function () {
         Route::get(
             'weekdays',
             [CatalogController::class, 'weekdays']
+        );
+
+        Route::get(
+            'attendance-day-statuses',
+            [CatalogController::class, 'attendanceDayStatuses',]
+        );
+
+        Route::get(
+            'attendance-mark-statuses',
+            [CatalogController::class, 'attendanceMarkStatuses',]
+        );
+
+        Route::get(
+            'attendance-mark-sources',
+            [CatalogController::class,'attendanceMarkSources',]
         );
     });
 
@@ -108,10 +125,20 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource(
         'attendance-schedules',
         AttendanceScheduleController::class
-    )->only([
-        'index',
-        'store',
-        'show',
-        'update',
-    ]);
+    )->only(['index', 'store', 'show', 'update',]);
+
+    // Rutas para asistencia diaria
+    Route::apiResource(
+        'attendance-days',
+        AttendanceDayController::class
+    )->only(['index','show',]);
+
+    // Rutas para marcas de asistencia
+    Route::post(
+        'attendance-marks/manual',
+        [
+            AttendanceMarkController::class,
+            'storeManual',
+        ]
+    );
 });

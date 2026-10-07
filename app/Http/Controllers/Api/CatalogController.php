@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\AttendanceDayStatus;
+use App\Enums\AttendanceMarkSource;
+use App\Enums\AttendanceMarkStatus;
 use App\Enums\AttendanceScheduleEventType;
 use App\Enums\EnrollmentStatus;
 use App\Enums\GuardianRelationship;
@@ -38,6 +41,30 @@ class CatalogController extends Controller
         return response()->json([
             'data' =>
             Weekday::options(),
+        ]);
+    }
+
+    public function attendanceDayStatuses(): JsonResponse
+    {
+        return response()->json([
+            'data' =>
+            AttendanceDayStatus::options(),
+        ]);
+    }
+
+    public function attendanceMarkStatuses(): JsonResponse
+    {
+        return response()->json([
+            'data' =>
+            AttendanceMarkStatus::options(),
+        ]);
+    }
+
+    public function attendanceMarkSources(): JsonResponse
+    {
+        return response()->json([
+            'data' =>
+            AttendanceMarkSource::options(),
         ]);
     }
 }

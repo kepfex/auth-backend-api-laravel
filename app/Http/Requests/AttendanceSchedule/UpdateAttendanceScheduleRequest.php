@@ -4,6 +4,7 @@ namespace App\Http\Requests\AttendanceSchedule;
 
 use App\Enums\AttendanceScheduleEventType;
 use App\Models\AttendanceSchedule;
+use App\Services\Attendance\AttendanceScheduleHistoryGuard;
 use App\Services\Attendance\AttendanceScheduleValidationService;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -161,12 +162,32 @@ class UpdateAttendanceScheduleRequest extends FormRequest
                     );
                 }
 
+                /*
+                |--------------------------------------------------------------------------
+                | Validaciones generales
+                |--------------------------------------------------------------------------
+                */
+
                 app(
                     AttendanceScheduleValidationService::class
                 )->validate(
                     $validator,
                     $data,
                     $schedule
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Protección histórica
+                |--------------------------------------------------------------------------
+                */
+
+                app(
+                    AttendanceScheduleHistoryGuard::class
+                )->validateUpdate(
+                    $validator,
+                    $schedule,
+                    $data
                 );
             },
         ];
