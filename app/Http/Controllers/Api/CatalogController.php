@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\AttendanceDayStatus;
+use App\Enums\AttendanceJustificationStatus;
 use App\Enums\AttendanceMarkSource;
 use App\Enums\AttendanceMarkStatus;
 use App\Enums\AttendanceScheduleEventType;
@@ -65,6 +66,14 @@ class CatalogController extends Controller
         return response()->json([
             'data' =>
             AttendanceMarkSource::options(),
+        ]);
+    }
+
+    public function attendanceJustificationStatuses(): JsonResponse
+    {
+        return response()->json([
+            'data' =>
+            AttendanceJustificationStatus::options(),
         ]);
     }
 }

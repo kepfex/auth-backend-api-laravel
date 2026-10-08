@@ -18,6 +18,9 @@ class AttendanceJustification extends Model
         'reviewed_by_user_id',
         'review_comment',
         'reviewed_at',
+        'attachment_original_name',
+        'attachment_mime_type',
+        'attachment_size',
     ];
 
     protected function casts(): array

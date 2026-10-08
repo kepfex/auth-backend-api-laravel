@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\AttendanceDayController;
+use App\Http\Controllers\Api\AttendanceJustificationController;
 use App\Http\Controllers\Api\AttendanceMarkController;
 use App\Http\Controllers\Api\AttendanceScheduleController;
 use App\Http\Controllers\Api\AuthController;
@@ -61,7 +62,12 @@ Route::middleware('auth:api')->group(function () {
 
         Route::get(
             'attendance-mark-sources',
-            [CatalogController::class,'attendanceMarkSources',]
+            [CatalogController::class, 'attendanceMarkSources',]
+        );
+
+        Route::get(
+            'attendance-justification-statuses',
+            [CatalogController::class, 'attendanceJustificationStatuses',]
         );
     });
 
@@ -131,7 +137,7 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource(
         'attendance-days',
         AttendanceDayController::class
-    )->only(['index','show',]);
+    )->only(['index', 'show',]);
 
     // Rutas para marcas de asistencia
     Route::post(
@@ -140,5 +146,31 @@ Route::middleware('auth:api')->group(function () {
             AttendanceMarkController::class,
             'storeManual',
         ]
+    );
+
+    // Rutas para justificaciones de asistencia
+    Route::get(
+        'attendance-justifications',
+        [AttendanceJustificationController::class, 'index',]
+    );
+
+    Route::post(
+        'attendance-justifications',
+        [AttendanceJustificationController::class, 'store',]
+    );
+
+    Route::get(
+        'attendance-justifications/{attendance_justification}',
+        [AttendanceJustificationController::class, 'show',]
+    );
+
+    Route::patch(
+        'attendance-justifications/{attendance_justification}/review',
+        [AttendanceJustificationController::class, 'review',]
+    );
+
+    Route::get(
+        'attendance-justifications/{attendance_justification}/attachment',
+        [AttendanceJustificationController::class, 'attachment',]
     );
 });
