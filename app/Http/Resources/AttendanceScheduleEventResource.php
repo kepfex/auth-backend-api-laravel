@@ -54,6 +54,12 @@ class AttendanceScheduleEventResource extends JsonResource
 
             'updated_at' =>
             $this->updated_at?->toISOString(),
+
+            'window_before_minutes' =>
+            $this->window_before_minutes,
+
+            'window_after_minutes' =>
+            $this->window_after_minutes,
         ];
     }
 }

@@ -17,19 +17,34 @@ class AttendanceScheduleEvent extends Model
         'event_type',
         'expected_time',
         'tolerance_minutes',
+        'window_before_minutes',
+        'window_after_minutes',
     ];
 
     protected function casts(): array
     {
         return [
-            'day_of_week' => Weekday::class,
+            'day_of_week' =>
+            Weekday::class,
+
             'event_type' =>
             AttendanceScheduleEventType::class,
-            'sequence' => 'integer',
-            'tolerance_minutes' => 'integer',
+
+            'sequence' =>
+            'integer',
+
+            'tolerance_minutes' =>
+            'integer',
+
+            'window_before_minutes' =>
+            'integer',
+
+            'window_after_minutes' =>
+            'integer',
         ];
     }
 
+    // Este evento pertenece a un horario de asistencia
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(
@@ -38,10 +53,12 @@ class AttendanceScheduleEvent extends Model
         );
     }
 
+    // Este evento tiene muchas marcas de asistencia
     public function attendanceMarks(): HasMany
     {
         return $this->hasMany(
-            AttendanceMark::class
+            AttendanceMark::class,
+            'attendance_schedule_event_id'
         );
     }
 }

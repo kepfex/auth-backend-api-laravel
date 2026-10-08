@@ -113,6 +113,19 @@ class StoreAttendanceScheduleRequest extends FormRequest
                 'min:0',
                 'max:180',
             ],
+            'events.*.window_before_minutes' => [
+                'sometimes',
+                'integer',
+                'min:0',
+                'max:360',
+            ],
+
+            'events.*.window_after_minutes' => [
+                'sometimes',
+                'integer',
+                'min:0',
+                'max:360',
+            ],
         ];
     }
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\AttendanceDayController;
 use App\Http\Controllers\Api\AttendanceJustificationController;
 use App\Http\Controllers\Api\AttendanceMarkController;
+use App\Http\Controllers\Api\AttendanceScanController;
 use App\Http\Controllers\Api\AttendanceScheduleController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
@@ -204,5 +205,11 @@ Route::middleware('auth:api')->group(function () {
     Route::patch(
         'qr-cards/{qrCard}/revoke',
         [QrCardController::class, 'revoke',]
+    );
+
+    // Rutas para escaneo de QR de asistencia
+    Route::post(
+        'attendance/scan',
+        [AttendanceScanController::class,'store',]
     );
 });

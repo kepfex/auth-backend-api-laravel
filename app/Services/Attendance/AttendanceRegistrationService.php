@@ -2,19 +2,21 @@
 
 namespace App\Services\Attendance;
 
+use App\Data\Attendance\AttendanceRegistrationResult;
 use App\Enums\AttendanceMarkSource;
 use App\Models\AttendanceDay;
 use App\Models\AttendanceScheduleEvent;
 use App\Models\Enrollment;
+use App\Models\QrCard;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 // Este servicio será extremadamente importante porque más adelante:
-    // registro manual
-    // QR
-    // quizá biométrico
+// registro manual
+// QR
+// quizá biométrico
 // deberán terminar utilizando la misma lógica.
 
 class AttendanceRegistrationService
@@ -23,8 +25,13 @@ class AttendanceRegistrationService
         private readonly ScheduleResolver $scheduleResolver,
         private readonly AttendanceMarkStatusCalculator $markStatusCalculator,
         private readonly AttendanceDayStatusService $dayStatusService,
-    ) {
-    }
+    ) {}
+
+    /*
+    |--------------------------------------------------------------------------
+    | Registro manual
+    |--------------------------------------------------------------------------
+    */
 
     public function registerManual(
         Enrollment $enrollment,
@@ -33,15 +40,65 @@ class AttendanceRegistrationService
         ?User $recordedBy = null,
         ?string $observation = null
     ): AttendanceDay {
+        $result =
+            $this->registerMatchedMark(
+                enrollment: $enrollment,
+
+                scheduleEvent: $scheduleEvent,
+
+                recordedAt: $recordedAt,
+
+                source: AttendanceMarkSource::Manual,
+
+                recordedBy: $recordedBy,
+
+                observation: $observation,
+            );
+
+        return $result->attendanceDay;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Registro mediante QR
+    |--------------------------------------------------------------------------
+    */
+
+    public function registerQr(
+        Enrollment $enrollment,
+        AttendanceScheduleEvent $scheduleEvent,
+        QrCard $qrCard,
+        CarbonInterface $recordedAt
+    ): AttendanceRegistrationResult {
+        if (
+            $qrCard->student_id !==
+            $enrollment->student_id
+        ) {
+            throw ValidationException::withMessages([
+                'qr' => [
+                    'La credencial QR no pertenece al estudiante de la matrícula.',
+                ],
+            ]);
+        }
+
         return $this->registerMatchedMark(
             enrollment: $enrollment,
+
             scheduleEvent: $scheduleEvent,
+
             recordedAt: $recordedAt,
-            source: AttendanceMarkSource::Manual,
-            recordedBy: $recordedBy,
-            observation: $observation,
+
+            source: AttendanceMarkSource::Qr,
+
+            qrCard: $qrCard,
         );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Registro común
+    |--------------------------------------------------------------------------
+    */
 
     private function registerMatchedMark(
         Enrollment $enrollment,
@@ -49,125 +106,141 @@ class AttendanceRegistrationService
         CarbonInterface $recordedAt,
         AttendanceMarkSource $source,
         ?User $recordedBy = null,
-        ?string $observation = null
-    ): AttendanceDay {
-        /*
-        |--------------------------------------------------------------------------
-        | Resolver horario correspondiente
-        |--------------------------------------------------------------------------
-        */
-
-        $schedule =
-            $this->scheduleResolver
-                ->resolve(
-                    $enrollment,
-                    $recordedAt
-                );
-
-        if (!$schedule) {
-            throw ValidationException::withMessages([
-                'recorded_at' => [
-                    'No existe un horario de asistencia vigente para el estudiante en la fecha indicada.',
-                ],
-            ]);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | El evento debe pertenecer al horario resuelto
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            $scheduleEvent->attendance_schedule_id !==
-            $schedule->id
-        ) {
-            throw ValidationException::withMessages([
-                'attendance_schedule_event_id' => [
-                    'El evento seleccionado no pertenece al horario aplicable al estudiante.',
-                ],
-            ]);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | El evento debe corresponder al día de la semana
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            $scheduleEvent->day_of_week->value !==
-            $recordedAt->dayOfWeekIso
-        ) {
-            throw ValidationException::withMessages([
-                'attendance_schedule_event_id' => [
-                    'El evento seleccionado no corresponde al día de la semana de la marcación.',
-                ],
-            ]);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Calcular puntualidad
-        |--------------------------------------------------------------------------
-        */
-
-        $calculation =
-            $this->markStatusCalculator
-                ->calculate(
-                    $scheduleEvent,
-                    $recordedAt
-                );
-
+        ?string $observation = null,
+        ?QrCard $qrCard = null
+    ): AttendanceRegistrationResult {
         return DB::transaction(
             function () use (
                 $enrollment,
-                $schedule,
                 $scheduleEvent,
                 $recordedAt,
                 $source,
                 $recordedBy,
                 $observation,
-                $calculation
+                $qrCard
             ) {
                 /*
                 |--------------------------------------------------------------------------
-                | Obtener o crear jornada
+                | Serializar registros de esta matrícula
+                |--------------------------------------------------------------------------
+                */
+
+                $lockedEnrollment =
+                    Enrollment::query()
+                    ->lockForUpdate()
+                    ->findOrFail(
+                        $enrollment->id
+                    );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Resolver horario
+                |--------------------------------------------------------------------------
+                */
+
+                $schedule =
+                    $this
+                    ->scheduleResolver
+                    ->resolve(
+                        $lockedEnrollment,
+                        $recordedAt
+                    );
+
+                if (!$schedule) {
+                    throw ValidationException::withMessages([
+                        'recorded_at' => [
+                            'No existe un horario de asistencia vigente para el estudiante en la fecha indicada.',
+                        ],
+                    ]);
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Evento pertenece al horario
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    $scheduleEvent
+                    ->attendance_schedule_id !==
+                    $schedule->id
+                ) {
+                    throw ValidationException::withMessages([
+                        'attendance_schedule_event_id' => [
+                            'El evento seleccionado no pertenece al horario aplicable al estudiante.',
+                        ],
+                    ]);
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Día correcto
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    $scheduleEvent
+                    ->day_of_week
+                    ->value !==
+                    $recordedAt
+                    ->dayOfWeekIso
+                ) {
+                    throw ValidationException::withMessages([
+                        'attendance_schedule_event_id' => [
+                            'El evento seleccionado no corresponde al día de la semana de la marcación.',
+                        ],
+                    ]);
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Calcular puntualidad
+                |--------------------------------------------------------------------------
+                */
+
+                $calculation =
+                    $this
+                    ->markStatusCalculator
+                    ->calculate(
+                        $scheduleEvent,
+                        $recordedAt
+                    );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Jornada
                 |--------------------------------------------------------------------------
                 */
 
                 $attendanceDay =
                     AttendanceDay::query()
-                        ->firstOrCreate(
-                            [
-                                'enrollment_id' =>
-                                    $enrollment->id,
+                    ->firstOrCreate(
+                        [
+                            'enrollment_id' =>
+                            $lockedEnrollment->id,
 
-                                'date' =>
-                                    $recordedAt
-                                        ->toDateString(),
-                            ],
-                            [
-                                'attendance_schedule_id' =>
-                                    $schedule->id,
+                            'date' =>
+                            $recordedAt
+                                ->toDateString(),
+                        ],
+                        [
+                            'attendance_schedule_id' =>
+                            $schedule->id,
 
-                                'status' =>
-                                    'pending',
-                            ]
-                        );
+                            'status' =>
+                            'pending',
+                        ]
+                    );
 
                 /*
                 |--------------------------------------------------------------------------
-                | Protección histórica
+                | Horario histórico inmutable
                 |--------------------------------------------------------------------------
-                |
-                | El día nunca debe cambiar de horario una vez creado.
-                |
                 */
 
                 if (
                     $attendanceDay
-                        ->attendance_schedule_id !==
+                    ->attendance_schedule_id !==
                     $schedule->id
                 ) {
                     throw ValidationException::withMessages([
@@ -179,18 +252,18 @@ class AttendanceRegistrationService
 
                 /*
                 |--------------------------------------------------------------------------
-                | Evitar duplicado amigablemente
+                | Anti duplicado
                 |--------------------------------------------------------------------------
                 */
 
                 $alreadyRegistered =
                     $attendanceDay
-                        ->marks()
-                        ->where(
-                            'attendance_schedule_event_id',
-                            $scheduleEvent->id
-                        )
-                        ->exists();
+                    ->marks()
+                    ->where(
+                        'attendance_schedule_event_id',
+                        $scheduleEvent->id
+                    )
+                    ->exists();
 
                 if ($alreadyRegistered) {
                     throw ValidationException::withMessages([
@@ -202,74 +275,82 @@ class AttendanceRegistrationService
 
                 /*
                 |--------------------------------------------------------------------------
-                | Crear marcación
+                | Crear Mark
                 |--------------------------------------------------------------------------
                 */
 
-                $attendanceDay
+                $attendanceMark =
+                    $attendanceDay
                     ->marks()
                     ->create([
                         'attendance_schedule_event_id' =>
-                            $scheduleEvent->id,
+                        $scheduleEvent->id,
+
+                        'qr_card_id' =>
+                        $qrCard?->id,
 
                         'event_type' =>
-                            $scheduleEvent
-                                ->event_type
-                                ->value,
+                        $scheduleEvent
+                            ->event_type
+                            ->value,
 
                         'recorded_at' =>
-                            $recordedAt,
+                        $recordedAt,
 
                         'status' =>
-                            $calculation['status']
-                                ->value,
+                        $calculation['status']->value,
 
                         'difference_minutes' =>
-                            $calculation[
-                                'difference_minutes'
-                            ],
+                        $calculation['difference_minutes'],
 
                         'source' =>
-                            $source->value,
+                        $source->value,
 
                         'recorded_by_user_id' =>
-                            $recordedBy?->id,
+                        $recordedBy?->id,
 
                         'observation' =>
-                            $observation,
+                        $observation,
                     ]);
 
                 /*
                 |--------------------------------------------------------------------------
-                | Recalcular jornada
+                | Recalcular día
                 |--------------------------------------------------------------------------
                 */
+
+                $this
+                    ->dayStatusService
+                    ->recalculate(
+                        $attendanceDay
+                    );
 
                 $attendanceDay =
-                    $this
-                        ->dayStatusService
-                        ->recalculate(
-                            $attendanceDay
-                        );
-
-                /*
-                |--------------------------------------------------------------------------
-                | Respuesta completa
-                |--------------------------------------------------------------------------
-                */
-
-                return $attendanceDay
+                    $attendanceDay
                     ->fresh()
                     ->load([
                         'enrollment.student.person',
                         'enrollment.academicYear',
                         'enrollment.gradeSection.grade.educationalLevel',
                         'enrollment.gradeSection.section',
-
                         'schedule.events',
-
                         'marks.scheduleEvent',
                     ]);
+
+                $attendanceMark =
+                    $attendanceMark
+                    ->fresh()
+                    ->load([
+                        'scheduleEvent',
+                        'qrCard',
+                        'attendanceDay',
+                    ]);
+
+                return new AttendanceRegistrationResult(
+                    attendanceDay: $attendanceDay,
+
+                    attendanceMark: $attendanceMark,
+                );
             }
         );
     }
