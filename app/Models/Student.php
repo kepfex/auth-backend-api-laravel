@@ -39,4 +39,9 @@ class Student extends Model
     public function enrollments(): HasMany {
         return $this->hasMany(Enrollment::class);
     }
+
+    // estudiante puede tener muchas tarjetas QR
+    public function qrCards(): HasMany {
+        return $this->hasMany(QrCard::class);
+    }
 }

@@ -21,6 +21,7 @@ class AttendanceMark extends Model
         'source',
         'recorded_by_user_id',
         'observation',
+        'qr_card_id',
     ];
 
     protected function casts(): array
@@ -67,6 +68,13 @@ class AttendanceMark extends Model
     {
         return $this->hasMany(
             AttendanceJustification::class
+        );
+    }
+
+    // Relacion de uno a muchos con QrScan
+    public function qrCard(): BelongsTo {
+        return $this->belongsTo(
+            QrCard::class
         );
     }
 }

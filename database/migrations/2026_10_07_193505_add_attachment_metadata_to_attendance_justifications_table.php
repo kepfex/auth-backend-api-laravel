@@ -40,7 +40,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('attendance_justifications', function (Blueprint $table) {
-            //
+            $table->dropColumn([
+                'attachment_original_name',
+                'attachment_mime_type',
+                'attachment_size',
+            ]);
         });
     }
 };

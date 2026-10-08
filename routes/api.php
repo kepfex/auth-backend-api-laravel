@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\GuardianController;
 use App\Http\Controllers\Api\PositionController;
 use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\PersonController;
+use App\Http\Controllers\Api\QrCardController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\StudentGuardianController;
 use Illuminate\Support\Facades\Route;
@@ -172,5 +173,36 @@ Route::middleware('auth:api')->group(function () {
     Route::get(
         'attendance-justifications/{attendance_justification}/attachment',
         [AttendanceJustificationController::class, 'attachment',]
+    );
+
+    // Rutas para tarjetas QR
+    Route::get(
+        'students/{student}/qr-cards',
+        [QrCardController::class, 'indexForStudent',]
+    );
+
+    Route::get(
+        'students/{student}/qr-card',
+        [QrCardController::class, 'current',]
+    );
+
+    Route::post(
+        'students/{student}/qr-cards',
+        [QrCardController::class, 'store',]
+    );
+
+    Route::post(
+        'students/{student}/qr-cards/reissue',
+        [QrCardController::class, 'reissue',]
+    );
+
+    Route::get(
+        'qr-cards/{qrCard}',
+        [QrCardController::class, 'show',]
+    );
+
+    Route::patch(
+        'qr-cards/{qrCard}/revoke',
+        [QrCardController::class, 'revoke',]
     );
 });
