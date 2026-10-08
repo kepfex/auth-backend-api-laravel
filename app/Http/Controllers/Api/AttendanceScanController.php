@@ -7,7 +7,6 @@ use App\Http\Requests\Attendance\ScanAttendanceQrRequest;
 use App\Http\Resources\QrScanResource;
 use App\Services\Qr\QrAttendanceScanService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class AttendanceScanController extends Controller
 {

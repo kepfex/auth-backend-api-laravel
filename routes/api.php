@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AcademicYearController;
+use App\Http\Controllers\Api\AttendanceCalendarExceptionController;
 use App\Http\Controllers\Api\AttendanceDayController;
 use App\Http\Controllers\Api\AttendanceJustificationController;
 use App\Http\Controllers\Api\AttendanceMarkController;
@@ -70,6 +71,16 @@ Route::middleware('auth:api')->group(function () {
         Route::get(
             'attendance-justification-statuses',
             [CatalogController::class, 'attendanceJustificationStatuses',]
+        );
+
+        Route::get(
+            'attendance-calendar-exception-types',
+            [CatalogController::class, 'attendanceCalendarExceptionTypes',]
+        );
+
+        Route::get(
+            'attendance-schedule-types',
+            [CatalogController::class, 'attendanceScheduleTypes',]
         );
     });
 
@@ -210,6 +221,12 @@ Route::middleware('auth:api')->group(function () {
     // Rutas para escaneo de QR de asistencia
     Route::post(
         'attendance/scan',
-        [AttendanceScanController::class,'store',]
+        [AttendanceScanController::class, 'store',]
     );
+
+    // Rutas para excepciones del calendario de asistencia
+    Route::apiResource(
+        'attendance-calendar-exceptions',
+        AttendanceCalendarExceptionController::class
+    )->only(['index', 'store', 'show', 'update',]);
 });

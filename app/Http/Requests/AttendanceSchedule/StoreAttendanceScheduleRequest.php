@@ -3,9 +3,9 @@
 namespace App\Http\Requests\AttendanceSchedule;
 
 use App\Enums\AttendanceScheduleEventType;
+use App\Enums\AttendanceScheduleType;
 use App\Enums\Weekday;
 use App\Services\Attendance\AttendanceScheduleValidationService;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -20,11 +20,6 @@ class StoreAttendanceScheduleRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
@@ -125,6 +120,13 @@ class StoreAttendanceScheduleRequest extends FormRequest
                 'integer',
                 'min:0',
                 'max:360',
+            ],
+
+            'schedule_type' => [
+                'sometimes',
+                Rule::enum(
+                    AttendanceScheduleType::class
+                ),
             ],
         ];
     }

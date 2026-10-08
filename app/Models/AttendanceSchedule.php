@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AttendanceScheduleType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,7 @@ class AttendanceSchedule extends Model
         'valid_from',
         'valid_until',
         'is_active',
+        'schedule_type',
     ];
 
     protected function casts(): array
@@ -24,6 +26,8 @@ class AttendanceSchedule extends Model
             'valid_from' => 'date',
             'valid_until' => 'date',
             'is_active' => 'boolean',
+            
+            'schedule_type' => AttendanceScheduleType::class,
         ];
     }
 

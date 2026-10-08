@@ -129,6 +129,17 @@ class AttendanceScheduleController extends Controller
                 );
         }
 
+        if (
+            isset(
+                $filters['schedule_type']
+            )
+        ) {
+            $query->where(
+                'schedule_type',
+                $filters['schedule_type']
+            );
+        }
+
         $schedules =
             $query
             ->orderByDesc(

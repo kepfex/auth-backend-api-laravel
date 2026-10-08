@@ -6,7 +6,6 @@ use App\Enums\AttendanceScheduleEventType;
 use App\Models\AttendanceSchedule;
 use App\Services\Attendance\AttendanceScheduleHistoryGuard;
 use App\Services\Attendance\AttendanceScheduleValidationService;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -21,11 +20,6 @@ class UpdateAttendanceScheduleRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
@@ -130,6 +124,10 @@ class UpdateAttendanceScheduleRequest extends FormRequest
                 'min:0',
                 'max:360',
             ],
+
+            'schedule_type' => [
+                'prohibited',
+            ],
         ];
     }
 
@@ -226,6 +224,9 @@ class UpdateAttendanceScheduleRequest extends FormRequest
 
             'events.*.tolerance_minutes.min' =>
             'La tolerancia no puede ser negativa.',
+
+            'schedule_type.prohibited' =>
+            'El tipo de horario no puede modificarse.',
         ];
     }
 }

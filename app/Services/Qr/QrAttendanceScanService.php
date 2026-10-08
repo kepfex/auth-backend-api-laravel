@@ -236,19 +236,22 @@ class QrAttendanceScanService
 
                 /*
                 |--------------------------------------------------------------------------
-                | Resolver horario
+                | Resolver horario de asistencia
                 |--------------------------------------------------------------------------
                 */
 
-                $schedule =
+                $scheduleResolution =
                     $this
                     ->scheduleResolver
-                    ->resolve(
+                    ->resolveDetailed(
                         $enrollment,
                         $scannedAt
                     );
 
-                if (!$schedule) {
+                if (
+                    !$scheduleResolution
+                        ->hasSchedule()
+                ) {
                     return $this
                         ->scanLogger
                         ->log(
@@ -258,11 +261,17 @@ class QrAttendanceScanService
 
                             qrCard: $qrCard,
 
-                            reason: 'no_schedule',
+                            reason: $scheduleResolution
+                                ->reason
+                                ?? 'no_schedule',
 
                             scannedAt: $scannedAt,
                         );
                 }
+
+                $schedule =
+                    $scheduleResolution
+                    ->schedule;
 
                 /*
                 |--------------------------------------------------------------------------

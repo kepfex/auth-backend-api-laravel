@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Requests\AttendanceSchedule;
+namespace App\Http\Requests\AttendanceCalendarException;
 
-use App\Enums\AttendanceScheduleType;
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Enums\AttendanceCalendarExceptionType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class IndexAttendanceScheduleRequest extends FormRequest
+class IndexAttendanceCalendarExceptionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -17,11 +16,6 @@ class IndexAttendanceScheduleRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
@@ -43,18 +37,21 @@ class IndexAttendanceScheduleRequest extends FormRequest
                 'exists:grade_sections,id',
             ],
 
-            'is_active' => [
-                'nullable',
-                'boolean',
-            ],
-
-            /*
-             * Buscar qué horario estaba
-             * vigente en una fecha concreta.
-             */
             'date' => [
                 'nullable',
                 'date',
+            ],
+
+            'type' => [
+                'nullable',
+                Rule::enum(
+                    AttendanceCalendarExceptionType::class
+                ),
+            ],
+
+            'is_active' => [
+                'nullable',
+                'boolean',
             ],
 
             'page' => [
@@ -68,12 +65,6 @@ class IndexAttendanceScheduleRequest extends FormRequest
                 'integer',
                 'min:5',
                 'max:100',
-            ],
-            'schedule_type' => [
-                'nullable',
-                Rule::enum(
-                    AttendanceScheduleType::class
-                ),
             ],
         ];
     }

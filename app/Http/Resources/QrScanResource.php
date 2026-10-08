@@ -195,6 +195,12 @@ class QrScanResource extends JsonResource
 
             default =>
             'No se pudo registrar la asistencia.',
+
+            'non_working_day' =>
+            'Hoy no se encuentra programado como día lectivo.',
+
+            'inactive_override_schedule' =>
+            'El horario excepcional configurado para hoy no se encuentra disponible.',
         };
     }
 }

@@ -62,6 +62,13 @@ class AttendanceScheduleValidationService
             ? (bool) $data['is_active']
             : (bool) $currentSchedule?->is_active;
 
+        $scheduleType =
+            $data['schedule_type']
+            ?? $currentSchedule
+            ?->schedule_type
+            ?->value
+            ?? \App\Enums\AttendanceScheduleType::Regular->value;
+
         /*
         |--------------------------------------------------------------------------
         | Año académico
@@ -176,6 +183,10 @@ class AttendanceScheduleValidationService
                     'valid_until',
                     '>=',
                     $validFrom
+                )
+                ->where(
+                    'schedule_type',
+                    $scheduleType
                 );
 
             if ($gradeSectionId === null) {

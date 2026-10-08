@@ -83,6 +83,12 @@ class AttendanceScheduleResource extends JsonResource
 
             'updated_at' =>
             $this->updated_at?->toISOString(),
+
+            'schedule_type' =>
+            $this->schedule_type->value,
+
+            'schedule_type_label' =>
+            $this->schedule_type->label(),
         ];
     }
 }
