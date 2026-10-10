@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Attendance\ScanAttendanceQrRequest;
+use App\Http\Resources\PublicQrScanResource;
 use App\Http\Resources\QrScanResource;
 use App\Services\Qr\QrAttendanceScanService;
 use Illuminate\Http\JsonResponse;
@@ -38,7 +39,7 @@ class AttendanceScanController extends Controller
         */
 
         return (
-            new QrScanResource(
+            new PublicQrScanResource(
                 $scan
             )
         )

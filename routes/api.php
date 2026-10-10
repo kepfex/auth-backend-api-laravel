@@ -218,12 +218,6 @@ Route::middleware('auth:api')->group(function () {
         [QrCardController::class, 'revoke',]
     );
 
-    // Rutas para escaneo de QR de asistencia
-    Route::post(
-        'attendance/scan',
-        [AttendanceScanController::class, 'store',]
-    );
-
     // Rutas para excepciones del calendario de asistencia
     Route::apiResource(
         'attendance-calendar-exceptions',
@@ -233,6 +227,10 @@ Route::middleware('auth:api')->group(function () {
     // Ruta para excepciones del calendario de asistencia que anulan el horario de asistencia para un día específico.
     Route::post(
         'attendance-calendar-exceptions/schedule-override',
-        [AttendanceCalendarExceptionController::class,'storeScheduleOverride',]
+        [AttendanceCalendarExceptionController::class, 'storeScheduleOverride',]
     );
 });
+
+// Ruta para escaneo de QR de asistencia
+Route::post('attendance/scan', [AttendanceScanController::class, 'store',])
+    ->middleware('throttle:attendance-scan');
