@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AttendanceCalendarException\IndexAttendanceCalendarExceptionRequest;
 use App\Http\Requests\AttendanceCalendarException\StoreAttendanceCalendarExceptionRequest;
+use App\Http\Requests\AttendanceCalendarException\StoreScheduleOverrideExceptionRequest;
 use App\Http\Requests\AttendanceCalendarException\UpdateAttendanceCalendarExceptionRequest;
 use App\Http\Resources\AttendanceCalendarExceptionResource;
 use App\Models\AttendanceCalendarException;
+use App\Services\Attendance\AttendanceCalendarOverrideService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AttendanceCalendarExceptionController extends Controller
@@ -143,6 +146,7 @@ class AttendanceCalendarExceptionController extends Controller
         );
     }
 
+    // Actualizar una excepción de calendario de asistencia existente.
     public function update(
         UpdateAttendanceCalendarExceptionRequest $request,
         AttendanceCalendarException $attendanceCalendarException
@@ -160,5 +164,24 @@ class AttendanceCalendarExceptionController extends Controller
         return new AttendanceCalendarExceptionResource(
             $attendanceCalendarException
         );
+    }
+
+    // Almacenar una excepción de calendario de asistencia que anula el horario de asistencia para un día específico.
+    public function storeScheduleOverride(
+        StoreScheduleOverrideExceptionRequest $request,
+        AttendanceCalendarOverrideService $service
+    ): JsonResponse {
+        $exception =
+            $service->create(
+                $request->validated()
+            );
+
+        return (
+            new AttendanceCalendarExceptionResource(
+                $exception
+            )
+        )
+            ->response()
+            ->setStatusCode(201);
     }
 }

@@ -229,4 +229,10 @@ Route::middleware('auth:api')->group(function () {
         'attendance-calendar-exceptions',
         AttendanceCalendarExceptionController::class
     )->only(['index', 'store', 'show', 'update',]);
+
+    // Ruta para excepciones del calendario de asistencia que anulan el horario de asistencia para un día específico.
+    Route::post(
+        'attendance-calendar-exceptions/schedule-override',
+        [AttendanceCalendarExceptionController::class,'storeScheduleOverride',]
+    );
 });
