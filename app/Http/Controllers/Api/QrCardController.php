@@ -3,195 +3,60 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\QrCard\IssueQrCardRequest;
-use App\Http\Requests\QrCard\ReissueQrCardRequest;
-use App\Http\Requests\QrCard\RevokeQrCardRequest;
 use App\Http\Resources\QrCardResource;
-use App\Models\QrCard;
 use App\Models\Student;
 use App\Services\Qr\QrCardService;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class QrCardController extends Controller
 {
-    private const RELATIONS = [
-        'issuedBy',
-        'revokedBy',
-    ];
-
     /**
-     * Historial de tarjetas del estudiante
-     */
-    public function indexForStudent(
-        Student $student
-    ): AnonymousResourceCollection {
-        $cards =
-            $student
-            ->qrCards()
-            ->with(
-                self::RELATIONS
-            )
-            ->latest('issued_at')
-            ->get();
-
-        return QrCardResource::collection(
-            $cards
-        );
-    }
-
-    /**
-     * Tarjeta actualmente utilizable.
+     * Obtener el código QR de un estudiante.
      */
     public function current(
         Student $student,
         QrCardService $service
     ): QrCardResource|JsonResponse {
-        $qrCard =
-            $service->current(
-                $student
-            );
+        $qrCard = $service->current($student);
 
-        if (!$qrCard) {
+        if (! $qrCard) {
             return response()->json([
-                'message' =>
-                'El estudiante no tiene una tarjeta QR activa.',
+                'message' => 'El estudiante no tiene un código QR asignado.',
             ], 404);
         }
 
-        $qrCard->load(
-            self::RELATIONS
-        );
-
-        return new QrCardResource(
-            $qrCard
-        );
+        return new QrCardResource($qrCard);
     }
 
     /**
-     * Emitir primera/nueva tarjeta.
+     * Activar o desactivar el código QR.
      */
-    public function store(
-        IssueQrCardRequest $request,
+    public function updateStatus(
+        Request $request,
         Student $student,
         QrCardService $service
-    ): JsonResponse {
-        $data =
-            $request->validated();
+    ): QrCardResource|JsonResponse {
+        $data = $request->validate([
+            'is_active' => [
+                'required',
+                'boolean',
+            ],
+        ]);
 
-        $expiresAt =
-            isset($data['expires_at'])
-            ? CarbonImmutable::parse(
-                $data['expires_at'],
-                config('app.timezone')
-            )
-            : null;
+        $qrCard = $service->current($student);
 
-        $qrCard =
-            $service->issue(
-                student: $student,
+        if (! $qrCard) {
+            return response()->json([
+                'message' => 'El estudiante no tiene un código QR asignado.',
+            ], 404);
+        }
 
-                issuedBy: $request->user('api'),
-
-                expiresAt: $expiresAt,
-            );
-
-        $qrCard->load(
-            self::RELATIONS
+        $qrCard = $service->setActive(
+            $qrCard,
+            $data['is_active']
         );
 
-        return (
-            new QrCardResource(
-                $qrCard
-            )
-        )
-            ->response()
-            ->setStatusCode(201);
-    }
-
-    /**
-     * Mostrar tarjeta.
-     */
-    public function show(
-        QrCard $qrCard
-    ): QrCardResource {
-        $qrCard->load(
-            self::RELATIONS
-        );
-
-        return new QrCardResource(
-            $qrCard
-        );
-    }
-
-    /**
-     * Revocar.
-     */
-    public function revoke(
-        RevokeQrCardRequest $request,
-        QrCard $qrCard,
-        QrCardService $service
-    ): QrCardResource {
-        $data =
-            $request->validated();
-
-        $qrCard =
-            $service->revoke(
-                qrCard: $qrCard,
-
-                revokedBy: $request->user('api'),
-
-                reason: $data['reason'],
-            );
-
-        $qrCard->load(
-            self::RELATIONS
-        );
-
-        return new QrCardResource(
-            $qrCard
-        );
-    }
-
-    /**
-     * Revocar la actual y emitir otra
-     * en una sola transacción.
-     */
-    public function reissue(
-        ReissueQrCardRequest $request,
-        Student $student,
-        QrCardService $service
-    ): QrCardResource {
-        $data =
-            $request->validated();
-
-        $expiresAt =
-            isset($data['expires_at'])
-            ? CarbonImmutable::parse(
-                $data['expires_at'],
-                config('app.timezone')
-            )
-            : null;
-
-        $qrCard =
-            $service->reissue(
-                student: $student,
-
-                issuedBy: $request->user('api'),
-
-                reason: $data['reason'],
-
-                expiresAt: $expiresAt,
-            );
-
-        $qrCard->load(
-            self::RELATIONS
-        );
-
-        return new QrCardResource(
-            $qrCard
-        );
+        return new QrCardResource($qrCard);
     }
 }

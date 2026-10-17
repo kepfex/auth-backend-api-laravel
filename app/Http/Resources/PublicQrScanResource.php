@@ -25,24 +25,24 @@ class PublicQrScanResource extends JsonResource
 
         return [
             'accepted' =>
-                $this->result ===
+            $this->result ===
                 QrScanResult::Accepted,
 
             'result' =>
-                $this->result->value,
+            $this->result->value,
 
             'result_label' =>
-                $this->result->label(),
+            $this->result->label(),
 
             'reason' =>
-                $this->reason,
+            $this->reason,
 
             'message' =>
-                $this->message(),
+            $this->message(),
 
             'scanned_at' =>
-                $this->scanned_at
-                    ?->toISOString(),
+            $this->scanned_at
+                ?->toISOString(),
 
             /*
             |--------------------------------------------------------------------------
@@ -51,63 +51,63 @@ class PublicQrScanResource extends JsonResource
             */
 
             'student' =>
-                $student && $person
-                    ? [
-                        'display_name' =>
-                            collect([
-                                $person->first_names,
-                                $person->paternal_surname,
-                                $person->maternal_surname,
-                            ])
-                                ->filter()
-                                ->join(' '),
-                    ]
-                    : null,
+            $student && $person
+                ? [
+                    'display_name' =>
+                    collect([
+                        $person->first_names,
+                        $person->paternal_surname,
+                        $person->maternal_surname,
+                    ])
+                        ->filter()
+                        ->join(' '),
+                ]
+                : null,
 
             'attendance' =>
-                $mark
-                    ? [
-                        'event_type' =>
-                            $mark
-                                ->event_type
-                                ->value,
+            $mark
+                ? [
+                    'event_type' =>
+                    $mark
+                        ->event_type
+                        ->value,
 
-                        'event_type_label' =>
-                            $mark
-                                ->event_type
-                                ->label(),
+                    'event_type_label' =>
+                    $mark
+                        ->event_type
+                        ->label(),
 
-                        'expected_time' =>
+                    'expected_time' =>
+                    $event
+                        ? substr(
+                            (string)
                             $event
-                                ? substr(
-                                    (string)
-                                        $event
-                                            ->expected_time,
-                                    0,
-                                    5
-                                )
-                                : null,
+                                ->expected_time,
+                            0,
+                            5
+                        )
+                        : null,
 
-                        'recorded_at' =>
-                            $mark
-                                ->recorded_at
-                                ?->toISOString(),
+                    'recorded_at' =>
+                    $mark
+                        ->recorded_at
+                        ?->toISOString(),
 
-                        'status' =>
-                            $mark
-                                ->status
-                                ->value,
+                    'status' =>
+                    $mark
+                        ->status
+                        ->value,
 
-                        'status_label' =>
-                            $mark
-                                ->status
-                                ->label(),
+                    'status_label' =>
+                    $mark
+                        ->status
+                        ->label(),
 
-                        'difference_minutes' =>
-                            $mark
-                                ->difference_minutes,
-                    ]
-                    : null,
+                    'difference_minutes' =>
+                    $mark
+                        ->difference_minutes,
+                ]
+                : null,
         ];
     }
 
@@ -119,9 +119,9 @@ class PublicQrScanResource extends JsonResource
         ) {
             $type =
                 $this
-                    ->attendanceMark
-                    ?->event_type
-                    ?->label()
+                ->attendanceMark
+                ?->event_type
+                ?->label()
                 ?? 'Asistencia';
 
             return "{$type} registrada correctamente.";
@@ -129,37 +129,34 @@ class PublicQrScanResource extends JsonResource
 
         return match ($this->reason) {
             'unknown_card' =>
-                'El código QR no está registrado.',
+            'El código QR no está registrado.',
 
-            'revoked_card' =>
-                'La tarjeta QR se encuentra revocada.',
-
-            'expired_card' =>
-                'La tarjeta QR se encuentra expirada.',
+            'inactive_card' =>
+            'El código QR del estudiante se encuentra deshabilitado.',
 
             'no_active_enrollment' =>
-                'No existe una matrícula activa para esta fecha.',
+            'No existe una matrícula activa para esta fecha.',
 
             'ambiguous_enrollment' =>
-                'Existe una inconsistencia en la matrícula.',
+            'Existe una inconsistencia en la matrícula.',
 
             'no_schedule' =>
-                'No existe un horario vigente.',
+            'No existe un horario vigente.',
 
             'no_events_today' =>
-                'No existen marcaciones programadas para hoy.',
+            'No existen marcaciones programadas para hoy.',
 
             'outside_window' =>
-                'La marcación se encuentra fuera del horario permitido.',
+            'La marcación se encuentra fuera del horario permitido.',
 
             'duplicate_mark' =>
-                'Esta marcación ya fue registrada.',
+            'Esta marcación ya fue registrada.',
 
             'non_working_day' =>
-                'Hoy no se encuentra programado como día lectivo.',
+            'Hoy no se encuentra programado como día lectivo.',
 
             default =>
-                'No fue posible registrar la asistencia.',
+            'No fue posible registrar la asistencia.',
         };
     }
 }

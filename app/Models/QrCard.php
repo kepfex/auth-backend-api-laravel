@@ -14,20 +14,13 @@ class QrCard extends Model
     protected $fillable = [
         'student_id',
         'uuid',
-        'issued_at',
-        'issued_by_user_id',
-        'expires_at',
-        'revoked_at',
-        'revoked_by_user_id',
-        'revocation_reason',
+        'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'issued_at' => 'datetime',
-            'expires_at' => 'datetime',
-            'revoked_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -39,25 +32,7 @@ class QrCard extends Model
         );
     }
 
-    // Este QrCard fue emitido por un usuario
-    public function issuedBy(): BelongsTo
-    {
-        return $this->belongsTo(
-            User::class,
-            'issued_by_user_id'
-        );
-    }
-
-    // Este QrCard fue revocado por un usuario
-    public function revokedBy(): BelongsTo
-    {
-        return $this->belongsTo(
-            User::class,
-            'revoked_by_user_id'
-        );
-    }
-
-    // Este QrCard tiene muchos escaneos
+    // Este QrCard tiene muchos escaneos - Escaneos realizados con este QR.
     public function scans(): HasMany
     {
         return $this->hasMany(
@@ -73,63 +48,20 @@ class QrCard extends Model
         );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Estado calculado
-    |--------------------------------------------------------------------------
-    */
-
-    // Devuelve el estado de ciclo de vida del QrCard
-    public function lifecycleStatus(): QrCardStatus
+    /**
+     * Filtrar únicamente códigos QR habilitados.
+     */
+    public function scopeUsable(Builder $query): Builder
     {
-        if ($this->revoked_at !== null) {
-            return QrCardStatus::Revoked;
-        }
-
-        if (
-            $this->expires_at !== null &&
-            $this->expires_at->isPast()
-        ) {
-            return QrCardStatus::Expired;
-        }
-
-        return QrCardStatus::Active;
+        return $query->where('is_active', true);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Tarjetas utilizables
-    |--------------------------------------------------------------------------
-    */
 
-    // Devuelve un scope para obtener solo los QrCards utilizables
-    public function scopeUsable(
-        Builder $query,
-        ?CarbonInterface $at = null
-    ): Builder {
-        $at ??= now();
-
-        return $query
-            ->whereNull('revoked_at')
-            ->where(
-                function (Builder $query) use ($at) {
-                    $query
-                        ->whereNull(
-                            'expires_at'
-                        )
-                        ->orWhere(
-                            'expires_at',
-                            '>',
-                            $at
-                        );
-                }
-            );
-    }
-
-    // Devuelve si el QrCard es utilizable
+    /**
+     * Determinar si el QR está habilitado.
+     */
     public function isUsable(): bool
     {
-        return $this->lifecycleStatus() ===
-            QrCardStatus::Active;
+        return $this->is_active;
     }
 }

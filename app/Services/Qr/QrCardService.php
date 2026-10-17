@@ -4,225 +4,70 @@ namespace App\Services\Qr;
 
 use App\Models\QrCard;
 use App\Models\Student;
-use App\Models\User;
-use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 class QrCardService
 {
-    public function issue(
-        Student $student,
-        ?User $issuedBy = null,
-        ?CarbonInterface $expiresAt = null
-    ): QrCard {
-        return DB::transaction(
-            function () use (
-                $student,
-                $issuedBy,
-                $expiresAt
-            ) {
-                /*
-                |--------------------------------------------------------------------------
-                | Bloqueo del Student
-                |--------------------------------------------------------------------------
-                |
-                | Serializa emisiones concurrentes
-                | para el mismo estudiante.
-                |
-                */
+    /**
+     * Crear el QR único de un estudiante.
+     *
+     * Si ya existe, devuelve el mismo registro
+     * sin generar otro UUID.
+     */
+    public function createForStudent(Student $student): QrCard
+    {
+        return DB::transaction(function () use ($student) {
 
-                $lockedStudent =
-                    Student::query()
-                    ->lockForUpdate()
-                    ->findOrFail(
-                        $student->id
-                    );
+            // Bloquear al estudiante para evitar
+            // creaciones concurrentes.
+            $lockedStudent = Student::query()
+                ->lockForUpdate()
+                ->findOrFail($student->id);
 
-                /*
-                |--------------------------------------------------------------------------
-                | Solo una tarjeta utilizable
-                |--------------------------------------------------------------------------
-                */
-
-                $hasActiveCard =
-                    QrCard::query()
-                    ->where(
-                        'student_id',
-                        $lockedStudent->id
-                    )
-                    ->usable()
-                    ->exists();
-
-                if ($hasActiveCard) {
-                    throw ValidationException::withMessages([
-                        'student_id' => [
-                            'El estudiante ya tiene una tarjeta QR activa.',
-                        ],
-                    ]);
-                }
-
-                return QrCard::create([
-                    'student_id' =>
-                    $lockedStudent->id,
-
-                    'uuid' =>
-                    Str::uuid()
-                        ->toString(),
-
-                    'issued_at' =>
-                    now(),
-
-                    'issued_by_user_id' =>
-                    $issuedBy?->id,
-
-                    'expires_at' =>
-                    $expiresAt,
-                ]);
-            }
-        );
+            return $lockedStudent->qrCard()
+                ->firstOrCreate(
+                    [],
+                    [
+                        'uuid' => Str::uuid()->toString(),
+                        'is_active' => true,
+                    ]
+                );
+        });
     }
 
-    public function revoke(
-        QrCard $qrCard,
-        ?User $revokedBy,
-        string $reason
-    ): QrCard {
-        return DB::transaction(
-            function () use (
-                $qrCard,
-                $revokedBy,
-                $reason
-            ) {
-                $qrCard =
-                    QrCard::query()
-                    ->lockForUpdate()
-                    ->findOrFail(
-                        $qrCard->id
-                    );
-
-                if ($qrCard->revoked_at) {
-                    throw ValidationException::withMessages([
-                        'qr_card' => [
-                            'La tarjeta QR ya se encuentra revocada.',
-                        ],
-                    ]);
-                }
-
-                if (
-                    $qrCard->expires_at &&
-                    $qrCard->expires_at->isPast()
-                ) {
-                    throw ValidationException::withMessages([
-                        'qr_card' => [
-                            'La tarjeta QR ya se encuentra expirada.',
-                        ],
-                    ]);
-                }
-
-                $qrCard->update([
-                    'revoked_at' =>
-                    now(),
-
-                    'revoked_by_user_id' =>
-                    $revokedBy?->id,
-
-                    'revocation_reason' =>
-                    trim($reason),
-                ]);
-
-                return $qrCard->fresh();
-            }
-        );
+    /**
+     * Obtener el QR del estudiante.
+     *
+     * Devuelve el registro aunque esté desactivado.
+     */
+    public function current(Student $student): ?QrCard
+    {
+        return $student->qrCard()->first();
     }
 
-    public function reissue(
-        Student $student,
-        ?User $issuedBy,
-        string $reason,
-        ?CarbonInterface $expiresAt = null
-    ): QrCard {
-        return DB::transaction(
-            function () use (
-                $student,
-                $issuedBy,
-                $reason,
-                $expiresAt
-            ) {
-                $lockedStudent =
-                    Student::query()
-                    ->lockForUpdate()
-                    ->findOrFail(
-                        $student->id
-                    );
+    /**
+     * Activar o desactivar el QR.
+     *
+     * El UUID nunca cambia.
+     */
+    public function setActive(QrCard $qrCard, bool $isActive): QrCard
+    {
+        return DB::transaction(function () use (
+            $qrCard,
+            $isActive
+        ) {
+            $card = QrCard::query()
+                ->lockForUpdate()
+                ->findOrFail($qrCard->id);
 
-                /*
-                |--------------------------------------------------------------------------
-                | Revocar tarjeta actualmente utilizable
-                |--------------------------------------------------------------------------
-                */
-
-                $currentCard =
-                    QrCard::query()
-                    ->where(
-                        'student_id',
-                        $lockedStudent->id
-                    )
-                    ->usable()
-                    ->lockForUpdate()
-                    ->first();
-
-                if ($currentCard) {
-                    $currentCard->update([
-                        'revoked_at' =>
-                        now(),
-
-                        'revoked_by_user_id' =>
-                        $issuedBy?->id,
-
-                        'revocation_reason' =>
-                        trim($reason),
-                    ]);
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | Crear nueva
-                |--------------------------------------------------------------------------
-                */
-
-                return QrCard::create([
-                    'student_id' =>
-                    $lockedStudent->id,
-
-                    'uuid' =>
-                    Str::uuid()
-                        ->toString(),
-
-                    'issued_at' =>
-                    now(),
-
-                    'issued_by_user_id' =>
-                    $issuedBy?->id,
-
-                    'expires_at' =>
-                    $expiresAt,
+            if ($card->is_active !== $isActive) {
+                $card->update([
+                    'is_active' => $isActive,
                 ]);
             }
-        );
-    }
 
-    public function current(
-        Student $student
-    ): ?QrCard {
-        return QrCard::query()
-            ->where(
-                'student_id',
-                $student->id
-            )
-            ->usable()
-            ->latest('issued_at')
-            ->first();
+            return $card->refresh();
+        });
     }
 }

@@ -9,6 +9,7 @@ use App\Http\Requests\Student\UpdateStudentRequest;
 use App\Http\Resources\StudentResource;
 use App\Models\Person;
 use App\Models\Student;
+use App\Services\Qr\QrCardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -24,7 +25,7 @@ class StudentController extends Controller
         $search = trim($filters['search'] ?? '');
 
         $students = Student::query()
-            ->with('person')
+            ->with(['person', 'qrCard:id,student_id,is_active'])
             ->when(
                 isset($filters['status']),
                 fn($q) => $q->where('status', $filters['status'])
@@ -50,24 +51,34 @@ class StudentController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Almacena un estudiante recién creado junto con su código QR.
      */
-    public function store(StoreStudentRequest $request)
+    public function store(StoreStudentRequest $request, QrCardService $qrCardService)
     {
         $input = $request->validated();
-        $student = DB::transaction(function () use ($input) {
+
+        $student = DB::transaction(function () use ($input, $qrCardService) {
+
+            // 1. Obtener o registrar la persona.
             $person = isset($input['person_id'])
                 ? Person::query()->findOrFail($input['person_id'])
                 : Person::create($input['person']);
 
-            return Student::create([
+            // 2. Registrar al estudiante.
+            $student = Student::create([
                 'person_id' => $person->id,
                 'student_code' => $input['student_code'],
                 'status' => $input['status'] ?? 'activo',
             ]);
+
+            // 3. Generar automáticamente su UUID.
+            $qrCardService->createForStudent($student);
+
+            return $student;
         });
 
-        return (new StudentResource($student->load('person')))
+        // 4. Responder con el estudiante registrado.
+        return (new StudentResource($student->load(['person', 'qrCard'])))
             ->response()
             ->setStatusCode(201);
     }

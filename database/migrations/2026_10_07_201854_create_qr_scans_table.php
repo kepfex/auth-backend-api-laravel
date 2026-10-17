@@ -71,21 +71,19 @@ return new class extends Migration
                 ->default(QrScanResult::Rejected->value);
 
             /*
-                |--------------------------------------------------------------------------
-                | Código/motivo técnico
-                |--------------------------------------------------------------------------
-                |
-                | Ejemplos futuros:
-                |
-                | unknown_card
-                | revoked_card
-                | expired_card
-                | duplicate_mark
-                | no_schedule
-                | no_active_enrollment
-                | outside_window
-                |
-                */
+            |--------------------------------------------------------------------------
+            | Código técnico de resultado
+            |--------------------------------------------------------------------------
+            |
+            | Ejemplos:
+            | unknown_card
+            | inactive_card
+            | duplicate_mark
+            | no_schedule
+            | no_active_enrollment
+            | outside_window
+            |
+            */
 
             $table->string('reason', 100)
                 ->nullable();

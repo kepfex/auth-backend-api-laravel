@@ -91,22 +91,4 @@ class User extends Authenticatable implements JWTSubject
             'reviewed_by_user_id'
         );
     }
-
-    /* Como tenemos auditoría de emisión/revocación de tarjetas QR, podemos obtener las tarjetas emitidas y revocadas por este usuario */
-    // Relaciones con QrCards emitidas
-    public function issuedQrCards(): HasMany
-    {
-        return $this->hasMany(
-            QrCard::class,
-            'issued_by_user_id'
-        );
-    }
-    // Relaciones con QrCards revocadas
-    public function revokedQrCards(): HasMany
-    {
-        return $this->hasMany(
-            QrCard::class,
-            'revoked_by_user_id'
-        );
-    }
 }

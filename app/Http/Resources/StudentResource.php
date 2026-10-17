@@ -20,6 +20,12 @@ class StudentResource extends JsonResource
             'student_code' => $this->student_code,
             'status' => $this->status,
             'person' => new PersonResource($this->whenLoaded('person')),
+            'qr_status' => $this->whenLoaded(
+                'qrCard',
+                fn() => $this->qrCard === null
+                    ? 'missing'
+                    : ($this->qrCard->is_active ? 'active' : 'inactive')
+            ),
             'created_at' => $this->created_at?->toISOString(),
         ];
     }

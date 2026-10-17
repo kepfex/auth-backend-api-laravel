@@ -48,10 +48,7 @@ class QrAttendanceScanService
 
                 $qrCard =
                     QrCard::query()
-                    ->where(
-                        'uuid',
-                        $rawToken
-                    )
+                    ->where('uuid', $rawToken)
                     ->lockForUpdate()
                     ->first();
 
@@ -75,59 +72,27 @@ class QrAttendanceScanService
                         );
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | Revocada
-                |--------------------------------------------------------------------------
-                */
-
-                if (
-                    $qrCard
-                    ->revoked_at !== null
-                ) {
-                    return $this
-                        ->scanLogger
-                        ->log(
-                            rawToken: $rawToken,
-
-                            result: QrScanResult::Rejected,
-
-                            qrCard: $qrCard,
-
-                            reason: 'revoked_card',
-
-                            scannedAt: $scannedAt,
-                        );
-                }
 
                 /*
                 |--------------------------------------------------------------------------
-                | Expirada
+                | Verificar que el código QR esté habilitado
                 |--------------------------------------------------------------------------
+                |
+                | Un QR deshabilitado no puede registrar asistencia,
+                | aunque el estudiante tenga una matrícula vigente.
+                |
                 */
 
-                if (
-                    $qrCard
-                    ->expires_at !== null
-                    &&
-                    $qrCard
-                    ->expires_at
-                    ->lte($scannedAt)
-                ) {
-                    return $this
-                        ->scanLogger
-                        ->log(
-                            rawToken: $rawToken,
-
-                            result: QrScanResult::Rejected,
-
-                            qrCard: $qrCard,
-
-                            reason: 'expired_card',
-
-                            scannedAt: $scannedAt,
-                        );
+                if (! $qrCard->isUsable()) {
+                    return $this->scanLogger->log(
+                        rawToken: $rawToken,
+                        result: QrScanResult::Rejected,
+                        qrCard: $qrCard,
+                        reason: 'inactive_card',
+                        scannedAt: $scannedAt,
+                    );
                 }
+
 
                 /*
                 |--------------------------------------------------------------------------

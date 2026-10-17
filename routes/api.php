@@ -187,36 +187,27 @@ Route::middleware('auth:api')->group(function () {
         [AttendanceJustificationController::class, 'attachment',]
     );
 
-    // Rutas para tarjetas QR
-    Route::get(
-        'students/{student}/qr-cards',
-        [QrCardController::class, 'indexForStudent',]
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | Códigos QR de estudiantes
+    |--------------------------------------------------------------------------
+    |
+    | Estas rutas permiten consultar y actualizar su estado.
+    |
+    */
+    Route::prefix('students/{student}/qr-card')
+        ->group(function () {
 
-    Route::get(
-        'students/{student}/qr-card',
-        [QrCardController::class, 'current',]
-    );
+            Route::get(
+                '/',
+                [QrCardController::class, 'current']
+            );
 
-    Route::post(
-        'students/{student}/qr-cards',
-        [QrCardController::class, 'store',]
-    );
-
-    Route::post(
-        'students/{student}/qr-cards/reissue',
-        [QrCardController::class, 'reissue',]
-    );
-
-    Route::get(
-        'qr-cards/{qrCard}',
-        [QrCardController::class, 'show',]
-    );
-
-    Route::patch(
-        'qr-cards/{qrCard}/revoke',
-        [QrCardController::class, 'revoke',]
-    );
+            Route::patch(
+                'status',
+                [QrCardController::class, 'updateStatus']
+            );
+        });
 
     // Rutas para excepciones del calendario de asistencia
     Route::apiResource(
