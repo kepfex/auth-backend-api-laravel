@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\AttendanceScanController;
 use App\Http\Controllers\Api\AttendanceScheduleController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
+use App\Http\Controllers\Api\CredentialPrintController;
 use App\Http\Controllers\Api\EducationalLevelController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\GradeController;
@@ -195,19 +196,23 @@ Route::middleware('auth:api')->group(function () {
     | Estas rutas permiten consultar y actualizar su estado.
     |
     */
-    Route::prefix('students/{student}/qr-card')
-        ->group(function () {
+    Route::prefix('students/{student}/qr-card')->group(function () {
+        Route::get(
+            '/',
+            [QrCardController::class, 'current']
+        );
 
-            Route::get(
-                '/',
-                [QrCardController::class, 'current']
-            );
+        Route::patch(
+            'status',
+            [QrCardController::class, 'updateStatus']
+        );
+    });
 
-            Route::patch(
-                'status',
-                [QrCardController::class, 'updateStatus']
-            );
-        });
+    // Esta ruta consulta las credenciales de un aula
+    Route::get(
+        'credential-print/students',
+        [CredentialPrintController::class, 'index']
+    );
 
     // Rutas para excepciones del calendario de asistencia
     Route::apiResource(
