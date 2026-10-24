@@ -26,18 +26,26 @@ class Person extends Model
         'is_active'
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'birth_date' => 'date:Y-m-d',
             'is_active' => 'boolean'
         ];
     }
 
-    public function student(): HasOne {
+    public function student(): HasOne
+    {
         return $this->hasOne(Student::class);
     }
 
-    public function guardian(): HasOne {
+    public function guardian(): HasOne
+    {
         return $this->hasOne(Guardian::class);
+    }
+
+    public function employee(): HasOne
+    {
+        return $this->hasOne(Employee::class);
     }
 }

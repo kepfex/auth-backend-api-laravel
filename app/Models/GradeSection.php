@@ -27,25 +27,36 @@ class GradeSection extends Model
         ];
     }
 
-    public function academicYear(): BelongsTo {
+    public function academicYear(): BelongsTo
+    {
         return $this->belongsTo(AcademicYear::class);
     }
 
-    public function grade(): BelongsTo {
+    public function grade(): BelongsTo
+    {
         return $this->belongsTo(Grade::class);
     }
 
-    public function section(): BelongsTo {
+    public function section(): BelongsTo
+    {
         return $this->belongsTo(Section::class);
     }
 
     // Salon de clases puede tener muchas matriculas, pero solo una por estudiante y año académico
-    public function enrollments(): HasMany {
+    public function enrollments(): HasMany
+    {
         return $this->hasMany(Enrollment::class);
     }
 
     // Salon de clases puede tener muchos horarios de asistencia
-    public function attendanceSchedules(): HasMany {
+    public function attendanceSchedules(): HasMany
+    {
         return $this->hasMany(AttendanceSchedule::class);
+    }
+
+    // Salon de clases puede tener muchas asignaciones de auxiliares
+    public function assistantAssignments(): HasMany
+    {
+        return $this->hasMany(AssistantAssignment::class);
     }
 }
