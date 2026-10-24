@@ -4,6 +4,7 @@ namespace App\Http\Requests\Employee;
 
 use App\Models\Employee;
 use App\Models\Person;
+use App\Validation\PersonDocumentValidator;
 use App\Validation\PersonValidationRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -43,7 +44,6 @@ class StoreEmployeeRequest extends FormRequest
         ], $personRules);
     }
 
-
     protected function prepareForValidation(): void
     {
         if (!is_array($this->input('person'))) {
@@ -53,9 +53,10 @@ class StoreEmployeeRequest extends FormRequest
         $person = $this->input('person');
 
         if (isset($person['document_number'])) {
-            $person['document_number'] = strtoupper(
-                trim((string) $person['document_number'])
-            );
+            $person['document_number'] =
+                PersonDocumentValidator::normalize(
+                    $person['document_number']
+                );
         }
 
         $this->merge(['person' => $person]);
@@ -87,32 +88,12 @@ class StoreEmployeeRequest extends FormRequest
                 return;
             }
 
-            $type = $this->input('person.document_type');
-            $number = $this->input('person.document_number');
-
-            if ($type === 'DNI' && !preg_match(
-                '/^[0-9]{8}$/',
-                (string) $number
-            )) {
-                $validator->errors()->add(
-                    'person.document_number',
-                    'El DNI debe contener ocho dígitos.'
-                );
-
-                return;
-            }
-
-            $exists = Person::withTrashed()
-                ->where('document_type', $type)
-                ->where('document_number', $number)
-                ->exists();
-
-            if ($exists) {
-                $validator->errors()->add(
-                    'person.document_number',
-                    'El documento ya existe. Busca y selecciona la persona registrada.'
-                );
-            }
+            PersonDocumentValidator::validate(
+                validator: $validator,
+                type: $this->input('person.document_type'),
+                number: $this->input('person.document_number'),
+                field: 'person.document_number',
+            );
         });
     }
 }

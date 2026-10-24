@@ -2,8 +2,9 @@
 
 namespace App\Http\Requests\Student;
 
+use App\Models\Student;
+use App\Validation\PersonDocumentValidator;
 use App\Validation\PersonValidationRules;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -63,27 +64,65 @@ class StoreStudentRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $data = [];
+
         if (is_array($this->input('person'))) {
             $person = $this->input('person');
-            $person['document_number'] = strtoupper(trim((string) ($person['document_number'] ?? '')));
+
+            if (isset($person['document_number'])) {
+                $person['document_number'] =
+                    PersonDocumentValidator::normalize(
+                        $person['document_number']
+                    );
+            }
+
             $data['person'] = $person;
         }
-        if ($this->has('student_code')) $data['student_code'] = strtoupper(trim((string) $this->input('student_code')));
+
+        // Conservamos por ahora el tratamiento actual
+        // del código de estudiante.
+        if ($this->has('student_code')) {
+            $data['student_code'] = strtoupper(
+                trim((string) $this->input('student_code'))
+            );
+        }
+
         $this->merge($data);
     }
 
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
-            if ($this->input('person.document_type') === 'DNI' && !preg_match('/^[0-9]{8}$/', (string) $this->input('person.document_number'))) {
-                $validator->errors()->add('person.document_number', 'El DNI debe contener ocho dígitos.');
+            if ($validator->errors()->isNotEmpty()) {
+                return;
             }
-            if ($this->filled('person_id') && \App\Models\Student::where('person_id', $this->input('person_id'))->exists()) {
-                $validator->errors()->add('person_id', 'Esta persona ya está registrada como estudiante.');
+
+            // Modalidad 1: persona existente.
+            if ($this->filled('person_id')) {
+                $alreadyStudent = Student::query()
+                    ->where('person_id', $this->input('person_id'))
+                    ->exists();
+
+                if ($alreadyStudent) {
+                    $validator->errors()->add(
+                        'person_id',
+                        'Esta persona ya está registrada como estudiante.'
+                    );
+                }
+
+                return;
             }
-            if (is_array($this->input('person')) && \App\Models\Person::withTrashed()->where('document_type', $this->input('person.document_type'))->where('document_number', $this->input('person.document_number'))->exists()) {
-                $validator->errors()->add('person.document_number', 'El documento ya existe. Busca y selecciona la persona registrada.');
+
+            // Modalidad 2: registrar una persona nueva.
+            if (!is_array($this->input('person'))) {
+                return;
             }
+
+            PersonDocumentValidator::validate(
+                validator: $validator,
+                type: $this->input('person.document_type'),
+                number: $this->input('person.document_number'),
+                field: 'person.document_number',
+            );
         });
     }
 }

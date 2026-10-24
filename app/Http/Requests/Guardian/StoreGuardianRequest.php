@@ -4,6 +4,7 @@ namespace App\Http\Requests\Guardian;
 
 use App\Models\Guardian;
 use App\Models\Person;
+use App\Validation\PersonDocumentValidator;
 use App\Validation\PersonValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -69,9 +70,12 @@ class StoreGuardianRequest extends FormRequest
         if (is_array($this->input('person'))) {
             $person = $this->input('person');
 
-            $person['document_number'] = strtoupper(
-                trim((string) ($person['document_number'] ?? ''))
-            );
+            if (isset($person['document_number'])) {
+                $person['document_number'] =
+                    PersonDocumentValidator::normalize(
+                        $person['document_number']
+                    );
+            }
 
             $data['person'] = $person;
         }
@@ -88,54 +92,37 @@ class StoreGuardianRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
-
-            // Validar DNI de una persona nueva
-            if (
-                $this->input('person.document_type') === 'DNI'
-                && !preg_match(
-                    '/^[0-9]{8}$/',
-                    (string) $this->input('person.document_number')
-                )
-            ) {
-                $validator->errors()->add(
-                    'person.document_number',
-                    'El DNI debe contener ocho dígitos.'
-                );
+            if ($validator->errors()->isNotEmpty()) {
+                return;
             }
 
-            // Persona existente que ya es apoderado
-            if (
-                $this->filled('person_id')
-                && Guardian::where(
-                    'person_id',
-                    $this->input('person_id')
-                )->exists()
-            ) {
-                $validator->errors()->add(
-                    'person_id',
-                    'Esta persona ya está registrada como apoderado.'
-                );
+            // Registrar como apoderado a una persona existente.
+            if ($this->filled('person_id')) {
+                $alreadyGuardian = Guardian::query()
+                    ->where('person_id', $this->input('person_id'))
+                    ->exists();
+
+                if ($alreadyGuardian) {
+                    $validator->errors()->add(
+                        'person_id',
+                        'Esta persona ya está registrada como apoderado.'
+                    );
+                }
+
+                return;
             }
 
-            // Intento de crear una persona duplicada
-            if (
-                is_array($this->input('person'))
-                && Person::withTrashed()
-                ->where(
-                    'document_type',
-                    $this->input('person.document_type')
-                )
-                ->where(
-                    'document_number',
-                    $this->input('person.document_number')
-                )
-                ->exists()
-            ) {
-                $validator->errors()->add(
-                    'person.document_number',
-                    'El documento ya existe. Busca y selecciona la persona registrada.'
-                );
+            // Registrar una persona nueva como apoderado.
+            if (!is_array($this->input('person'))) {
+                return;
             }
+
+            PersonDocumentValidator::validate(
+                validator: $validator,
+                type: $this->input('person.document_type'),
+                number: $this->input('person.document_number'),
+                field: 'person.document_number',
+            );
         });
     }
 }
