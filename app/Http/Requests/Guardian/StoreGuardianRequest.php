@@ -3,10 +3,8 @@
 namespace App\Http\Requests\Guardian;
 
 use App\Models\Guardian;
-use App\Models\Person;
 use App\Validation\PersonDocumentValidator;
 use App\Validation\PersonValidationRules;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
