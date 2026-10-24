@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Guardian;
 
-use App\Http\Requests\Person\StorePersonRequest;
 use App\Models\Guardian;
 use App\Models\Person;
+use App\Validation\PersonValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -54,15 +54,16 @@ class StoreGuardianRequest extends FormRequest
             ],
 
         ], array_map(
-            fn($rules) => array_merge(
-                ['exclude_without:person'],
-                $rules
-            ),
-            StorePersonRequest::personRules('person.')
+            fn(array $rules) => [
+                'exclude_without:person',
+                ...$rules,
+            ],
+            PersonValidationRules::rules('person.')
         ));
     }
 
-    protected function prepareForValidation(): void {
+    protected function prepareForValidation(): void
+    {
         $data = [];
 
         if (is_array($this->input('person'))) {

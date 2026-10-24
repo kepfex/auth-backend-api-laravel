@@ -35,6 +35,10 @@ class PersonResource extends JsonResource
                 'guardian',
                 fn() => $this->guardian?->id
             ),
+            'employee_id' => $this->whenLoaded(
+                'employee',
+                fn() => $this->employee?->id
+            ),
         ];
     }
 }

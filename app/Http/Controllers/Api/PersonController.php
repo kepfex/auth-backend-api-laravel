@@ -26,6 +26,7 @@ class PersonController extends Controller
         $person = Person::with([
             'student',
             'guardian',
+            'employee',
         ])
             ->where('document_type', $filters['document_type'])
             ->where(
@@ -53,6 +54,7 @@ class PersonController extends Controller
         return new PersonResource($person->load([
             'student',
             'guardian',
+            'employee'
         ]));
     }
 
@@ -67,6 +69,7 @@ class PersonController extends Controller
             $person->load([
                 'student',
                 'guardian',
+                'employee',
             ])
         );
     }

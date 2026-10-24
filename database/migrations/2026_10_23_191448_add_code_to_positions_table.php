@@ -18,7 +18,7 @@ return new class extends Migration
         });
 
         $codes = [
-            'Principal' => 'DIRECTOR',
+            'Director' => 'DIRECTOR',
             'Auxiliar de Educación' => 'AUXILIAR_EDUCACION',
             'Profesor' => 'DOCENTE',
             'Administrativo' => 'ADMINISTRATIVO',

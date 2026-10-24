@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Student;
 
-use App\Http\Requests\Person\StorePersonRequest;
+use App\Validation\PersonValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,7 +23,8 @@ class StoreStudentRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
-    public function rules(): array {
+    public function rules(): array
+    {
         return array_merge([
             'person_id' => [
                 'required_without:person',
@@ -51,11 +52,11 @@ class StoreStudentRequest extends FormRequest
             ],
 
         ], array_map(
-            fn($rules) => array_merge(
-                ['exclude_without:person'],
-                $rules
-            ),
-            StorePersonRequest::personRules('person.')
+            fn(array $rules) => [
+                'exclude_without:person',
+                ...$rules,
+            ],
+            PersonValidationRules::rules('person.')
         ));
     }
 
