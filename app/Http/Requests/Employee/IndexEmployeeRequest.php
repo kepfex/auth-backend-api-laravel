@@ -2,28 +2,61 @@
 
 namespace App\Http\Requests\Employee;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class IndexEmployeeRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        // Temporalmente cualquier usuario autenticado.
+        // Los permisos específicos llegarán en 7J-B.
+        return $this->user() !== null;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'search' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'is_active' => [
+                'sometimes',
+                'boolean',
+            ],
+
+            'position_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('positions', 'id'),
+            ],
+
+            'page' => [
+                'sometimes',
+                'integer',
+                'min:1',
+            ],
+
+            'per_page' => [
+                'sometimes',
+                'integer',
+                'min:1',
+                'max:100',
+            ],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('search')) {
+            $this->merge([
+                'search' => trim(
+                    (string) $this->input('search')
+                ),
+            ]);
+        }
     }
 }

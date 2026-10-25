@@ -24,6 +24,15 @@ final class EmployeeRegistrationService
                 ? $this->findExistingPerson($data['person_id'])
                 : $this->createPerson($data['person']);
 
+            // Rechazar personas inactivas
+            if (! $person->is_active) {
+                throw ValidationException::withMessages([
+                    'person_id' =>
+                    'La persona se encuentra inactiva. '
+                        . 'Debes regularizar su estado antes de registrarla como empleado.',
+                ]);
+            }
+
             // 2. Verificar que no sea empleado.
             if ($person->employee()->exists()) {
                 throw ValidationException::withMessages([

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\CredentialPrintController;
 use App\Http\Controllers\Api\EducationalLevelController;
+use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\GradeSectionController;
@@ -125,6 +126,14 @@ Route::middleware('auth:api')->group(function () {
                 [StudentGuardianController::class, 'destroy']
             );
         });
+
+    // Gestión de empleados
+    Route::apiResource('employees', EmployeeController::class)
+        ->only([
+            'index',
+            'store',
+            'show',
+        ]);
 
     // Ruta para matriculas
     Route::apiResource('enrollments', EnrollmentController::class)
