@@ -12,7 +12,8 @@ use Illuminate\Validation\ValidationException;
 final class EmployeeRegistrationService
 {
     public function __construct(
-        private readonly InstitutionalCodeService $codeService
+        private readonly InstitutionalCodeService $codeService,
+        private readonly EmployeePositionValidator $positionValidator,
     ) {}
 
     public function register(array $data): Employee
@@ -41,19 +42,34 @@ final class EmployeeRegistrationService
                 ]);
             }
 
+            // Obtener y verificar los cargos.
+            $positionIds = $data['position_ids'];
+
+            if ($positionIds === []) {
+                throw ValidationException::withMessages([
+                    'position_ids' =>
+                    'Debes seleccionar al menos un cargo.',
+                ]);
+            }
+
+            $this->positionValidator->validateActive($positionIds);
+
             // 3. Generar código institucional.
             $employeeCode = $this->codeService->generate(
                 InstitutionalCodeType::Employee
             );
 
-            // 4. Crear el perfil laboral.
+            // 4. Crear empleado
             $employee = Employee::create([
                 'person_id' => $person->id,
                 'employee_code' => $employeeCode,
                 'is_active' => true,
             ]);
 
-            // 5. Cargar relaciones para la respuesta.
+            // 5. Asociar todos los cargos iniciales.
+            $employee->positions()->attach($positionIds);
+
+            // 6. Cargar relaciones para la respuesta.
             return $employee->load([
                 'person',
                 'positions',
@@ -71,8 +87,7 @@ final class EmployeeRegistrationService
     private function createPerson(array $data): Person
     {
         // El Form Request ya validó los campos.
-        // La condición de persona activa se establece
-        // desde el backend al crear un nuevo empleado.
+        // La condición de persona activa se establece desde el backend al crear un nuevo empleado.
         unset($data['is_active']);
 
         return Person::create([

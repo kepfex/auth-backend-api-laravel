@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\CredentialPrintController;
 use App\Http\Controllers\Api\EducationalLevelController;
 use App\Http\Controllers\Api\EmployeeController;
+use App\Http\Controllers\Api\EmployeePositionController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\GradeSectionController;
@@ -134,6 +135,18 @@ Route::middleware('auth:api')->group(function () {
             'store',
             'show',
         ]);
+
+    // Actualizar cargos institucionales.
+    Route::put(
+        'employees/{employee}/positions',
+        [EmployeePositionController::class, 'update']
+    );
+
+    // Activar o desactivar empleado.
+    Route::patch(
+        'employees/{employee}/status',
+        [EmployeeController::class, 'updateStatus']
+    );
 
     // Ruta para matriculas
     Route::apiResource('enrollments', EnrollmentController::class)

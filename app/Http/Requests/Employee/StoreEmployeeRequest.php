@@ -40,6 +40,22 @@ class StoreEmployeeRequest extends FormRequest
                 'prohibits:person_id',
                 'array',
             ],
+
+            'position_ids' => [
+                'required',
+                'array',
+                'min:1',
+                'max:20',
+            ],
+
+            'position_ids.*' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('positions', 'id')
+                    ->where('is_active', true),
+            ],
+
         ], $personRules);
     }
 

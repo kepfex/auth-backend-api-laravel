@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\InstitutionalCodeType;
 use App\Models\Employee;
+use App\Models\Position;
 use App\Services\Employee\EmployeeRegistrationService;
 use App\Services\InstitutionalCodeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,6 +17,13 @@ class EmployeeRegistrationServiceTest extends TestCase
 
     public function test_registration_failure_rolls_back_person_and_code(): void
     {
+        $position = Position::create([
+            'code' => 'DOCENTE',
+            'name' => 'Profesor',
+            'description' => 'Profesor',
+            'is_active' => true,
+        ]);
+
         $this->travelTo(
             \Illuminate\Support\Carbon::parse('2026-10-25')
         );
@@ -38,6 +46,7 @@ class EmployeeRegistrationServiceTest extends TestCase
                         'paternal_surname' => 'Torres',
                         'maternal_surname' => 'Pérez',
                     ],
+                    'position_ids' => [$position->id],
                 ]);
 
             $this->fail(
@@ -55,6 +64,8 @@ class EmployeeRegistrationServiceTest extends TestCase
 
         // No debe persistir el empleado.
         $this->assertDatabaseCount('employees', 0);
+
+        $this->assertDatabaseCount('employee_positions', 0);
 
         // El siguiente código sigue siendo E2600001.
         $code = app(InstitutionalCodeService::class)

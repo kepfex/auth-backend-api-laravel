@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Employee\IndexEmployeeRequest;
 use App\Http\Requests\Employee\StoreEmployeeRequest;
+use App\Http\Requests\Employee\UpdateEmployeeStatusRequest;
 use App\Http\Resources\EmployeeResource;
 use App\Models\Employee;
 use App\Services\Employee\EmployeeRegistrationService;
+use App\Services\Employee\EmployeeStatusService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class EmployeeController extends Controller
@@ -95,9 +97,9 @@ class EmployeeController extends Controller
      */
     public function store(
         StoreEmployeeRequest $request,
-        EmployeeRegistrationService $registrationService
+        EmployeeRegistrationService $service
     ) {
-        $employee = $registrationService->register(
+        $employee = $service->register(
             $request->validated()
         );
 
@@ -108,6 +110,7 @@ class EmployeeController extends Controller
             ->response()
             ->setStatusCode(201);
     }
+
 
     /**
      * Consultar el detalle de un empleado.
@@ -121,5 +124,19 @@ class EmployeeController extends Controller
                 'positions',
             ])
         );
+    }
+
+
+    public function updateStatus(
+        UpdateEmployeeStatusRequest $request,
+        Employee $employee,
+        EmployeeStatusService $service
+    ): EmployeeResource {
+        $employee = $service->setActive(
+            $employee,
+            $request->boolean('is_active')
+        );
+
+        return new EmployeeResource($employee);
     }
 }
