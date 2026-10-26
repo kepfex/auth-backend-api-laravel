@@ -16,7 +16,7 @@ class SyncEmployeePositionsRequest extends FormRequest
     {
         return [
             'position_ids' => [
-                'required',
+                'present',
                 'array',
                 'max:20',
             ],
@@ -28,6 +28,23 @@ class SyncEmployeePositionsRequest extends FormRequest
                 Rule::exists('positions', 'id')
                     ->where('is_active', true),
             ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'position_ids.present' =>
+            'Debes enviar el campo position_ids.',
+
+            'position_ids.array' =>
+            'Los cargos deben enviarse como un arreglo.',
+
+            'position_ids.*.distinct' =>
+            'No puedes seleccionar un mismo cargo varias veces.',
+
+            'position_ids.*.exists' =>
+            'Uno de los cargos no existe o está inactivo.',
         ];
     }
 }
