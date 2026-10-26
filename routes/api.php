@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AcademicYearController;
+use App\Http\Controllers\Api\AssistantAssignmentController;
 use App\Http\Controllers\Api\AttendanceCalendarExceptionController;
 use App\Http\Controllers\Api\AttendanceDayController;
 use App\Http\Controllers\Api\AttendanceJustificationController;
@@ -147,6 +148,19 @@ Route::middleware('auth:api')->group(function () {
         'employees/{employee}/status',
         [EmployeeController::class, 'updateStatus']
     );
+
+    // ============================================
+    // ASIGNACIONES DE AUXILIARES
+    // ============================================
+
+    Route::apiResource(
+        'assistant-assignments',
+        AssistantAssignmentController::class
+    )->only([
+        'index',
+        'store',
+        'show',
+    ]);
 
     // Ruta para matriculas
     Route::apiResource('enrollments', EnrollmentController::class)
