@@ -162,6 +162,11 @@ Route::middleware('auth:api')->group(function () {
         'show',
     ]);
 
+    Route::patch(
+        'assistant-assignments/{assistantAssignment}/finish',
+        [AssistantAssignmentController::class, 'finish']
+    );
+
     // Ruta para matriculas
     Route::apiResource('enrollments', EnrollmentController::class)
         ->only([

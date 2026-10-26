@@ -8,10 +8,8 @@ use Illuminate\Validation\ValidationException;
 
 final class EmployeeStatusService
 {
-    public function setActive(
-        Employee $employee,
-        bool $active
-    ): Employee {
+    public function setActive(Employee $employee, bool $active): Employee
+    {
         return DB::transaction(function () use (
             $employee,
             $active
@@ -25,16 +23,25 @@ final class EmployeeStatusService
             }
 
             if (!$active) {
-                $hasEnabledAssignments = $employee
+
+                $today = now()->toDateString();
+
+                $hasPendingAssignments = $employee
                     ->assistantAssignments()
                     ->where('is_active', true)
+                    ->where(function ($query) use ($today) {
+                        $query
+                            ->whereNull('end_date')
+                            ->orWhereDate('end_date', '>=', $today);
+                    })
                     ->exists();
 
-                if ($hasEnabledAssignments) {
+                if ($hasPendingAssignments) {
                     throw ValidationException::withMessages([
                         'is_active' =>
-                            'El empleado tiene asignaciones escolares habilitadas. ' .
-                            'Finalízalas antes de desactivarlo.',
+                        'El empleado tiene asignaciones vigentes '
+                            . 'o futuras. Debes regularizarlas '
+                            . 'antes de desactivar su perfil laboral.',
                     ]);
                 }
             }

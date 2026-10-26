@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AssistantAssignment\FinishAssistantAssignmentRequest;
 use App\Http\Requests\AssistantAssignment\IndexAssistantAssignmentRequest;
 use App\Http\Requests\AssistantAssignment\StoreAssistantAssignmentRequest;
 use App\Http\Resources\AssistantAssignmentResource;
 use App\Models\AssistantAssignment;
 use App\Services\AssistantAssignment\AssistantAssignmentService;
+use App\Services\AssistantAssignment\FinishAssistantAssignmentService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
@@ -30,7 +32,7 @@ class AssistantAssignmentController extends Controller
         if (isset($filters['academic_year_id'])) {
             $query->whereHas(
                 'gradeSection',
-                fn ($q) => $q->where(
+                fn($q) => $q->where(
                     'academic_year_id',
                     $filters['academic_year_id']
                 )
@@ -84,7 +86,7 @@ class AssistantAssignmentController extends Controller
         return (new AssistantAssignmentResource($assignment))
             ->additional([
                 'message' =>
-                    'Asignación de auxiliar registrada correctamente.',
+                'Asignación de auxiliar registrada correctamente.',
             ])
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
@@ -102,5 +104,23 @@ class AssistantAssignmentController extends Controller
                 'gradeSection.section',
             ])
         );
+    }
+
+
+    public function finish(
+        FinishAssistantAssignmentRequest $request,
+        AssistantAssignment $assistantAssignment,
+        FinishAssistantAssignmentService $service
+    ): AssistantAssignmentResource {
+        $assignment = $service->finish(
+            $assistantAssignment,
+            $request->validated('end_date')
+        );
+
+        return (new AssistantAssignmentResource($assignment))
+            ->additional([
+                'message' =>
+                'Asignación finalizada correctamente.',
+            ]);
     }
 }

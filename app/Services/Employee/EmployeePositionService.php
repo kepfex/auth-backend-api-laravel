@@ -20,10 +20,8 @@ final class EmployeePositionService
      *
      * @param array<int, int> $positionIds
      */
-    public function sync(
-        Employee $employee,
-        array $positionIds
-    ): Employee {
+    public function sync(Employee $employee, array $positionIds): Employee
+    {
         return DB::transaction(function () use (
             $employee,
             $positionIds
@@ -36,7 +34,7 @@ final class EmployeePositionService
             if (!$employee->is_active) {
                 throw ValidationException::withMessages([
                     'employee' =>
-                        'No puedes modificar los cargos de un empleado inactivo.',
+                    'No puedes modificar los cargos de un empleado inactivo.',
                 ]);
             }
 
@@ -52,7 +50,7 @@ final class EmployeePositionService
             if (!$assistantPosition) {
                 throw ValidationException::withMessages([
                     'position_ids' =>
-                        'No está configurado el cargo Auxiliar de Educación.',
+                    'No está configurado el cargo Auxiliar de Educación.',
                 ]);
             }
 
@@ -74,17 +72,24 @@ final class EmployeePositionService
                 $hasAssistantPosition &&
                 !$keepsAssistantPosition
             ) {
-                $hasEnabledAssignments = $employee
+                $today = now()->toDateString();
+
+                $hasPendingAssignments = $employee
                     ->assistantAssignments()
                     ->where('is_active', true)
+                    ->where(function ($query) use ($today) {
+                        $query
+                            ->whereNull('end_date')
+                            ->orWhereDate('end_date', '>=', $today);
+                    })
                     ->exists();
 
-                if ($hasEnabledAssignments) {
+                if ($hasPendingAssignments) {
                     throw ValidationException::withMessages([
                         'position_ids' =>
-                            'No puedes retirar el cargo Auxiliar de Educación ' .
-                            'porque el empleado tiene asignaciones escolares ' .
-                            'habilitadas. Finaliza esas asignaciones primero.',
+                        'No puedes retirar el cargo Auxiliar de Educación '
+                            . 'mientras existan asignaciones vigentes o futuras. '
+                            . 'Finaliza o regulariza esas asignaciones primero.',
                     ]);
                 }
             }
