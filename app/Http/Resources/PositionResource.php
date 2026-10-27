@@ -16,6 +16,7 @@ class PositionResource extends JsonResource
     {
         return [
             'id'          => $this->id,
+            'code'        => $this->code,
             'name'        => $this->name,
             'description' => $this->description,
             'is_active'   => (bool) $this->is_active,

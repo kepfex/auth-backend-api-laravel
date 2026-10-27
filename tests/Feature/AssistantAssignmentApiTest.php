@@ -317,4 +317,84 @@ class AssistantAssignmentApiTest extends TestCase
             'is_active' => 0,
         ]);
     }
+
+
+    public function test_filters_assignments_by_educational_level(): void
+    {
+        // El aula creada en setUp() pertenece a Secundaria.
+        $secondaryLevelId = $this->classroom
+            ->grade
+            ->educational_level_id;
+
+        // Registrar una asignación al aula de Secundaria.
+        $secondaryAssignment = $this->createAssignment();
+
+        // Crear otro nivel educativo.
+        $primaryLevel = EducationalLevel::create([
+            'code' => 'PRI',
+            'name' => 'Primaria',
+            'order' => 2,
+        ]);
+
+        $primaryGrade = Grade::create([
+            'educational_level_id' => $primaryLevel->id,
+            'code' => 'PRI_1',
+            'name' => 'Primero',
+            'order' => 1,
+        ]);
+
+        $primarySection = Section::create([
+            'name' => 'B',
+        ]);
+
+        // Reutilizar el mismo año académico.
+        $primaryClassroom = GradeSection::create([
+            'academic_year_id' =>
+            $this->classroom->academic_year_id,
+            'grade_id' => $primaryGrade->id,
+            'section_id' => $primarySection->id,
+            'shift' => 'mañana',
+            'capacity' => 30,
+            'is_active' => true,
+        ]);
+
+        // Crear asignación de otro nivel.
+        AssistantAssignment::create([
+            'employee_id' => $this->employee->id,
+            'grade_section_id' => $primaryClassroom->id,
+            'start_date' => '2026-03-16',
+            'end_date' => '2026-12-18',
+            'is_active' => true,
+        ]);
+
+        // Consultar únicamente asignaciones de Secundaria.
+        $this->getJson(
+            '/api/assistant-assignments?' .
+                http_build_query([
+                    'academic_year_id' =>
+                    $this->classroom->academic_year_id,
+                    'educational_level_id' => $secondaryLevelId,
+                    'per_page' => 1,
+                    'page' => 1,
+                ])
+        )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath(
+                'data.0.id',
+                $secondaryAssignment->id
+            )
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('meta.last_page', 1);
+    }
+
+    // conuslta nivel inexistente
+    public function test_rejects_nonexistent_educational_level_filter(): void
+    {
+        $this->getJson(
+            '/api/assistant-assignments?educational_level_id=999999'
+        )
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('educational_level_id');
+    }
 }

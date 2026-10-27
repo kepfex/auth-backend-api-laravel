@@ -39,6 +39,16 @@ class AssistantAssignmentController extends Controller
             );
         }
 
+        if (isset($filters['educational_level_id'])) {
+            $query->whereHas(
+                'gradeSection.grade',
+                fn($q) => $q->where(
+                    'educational_level_id',
+                    $filters['educational_level_id']
+                )
+            );
+        }
+
         if (isset($filters['employee_id'])) {
             $query->where(
                 'employee_id',

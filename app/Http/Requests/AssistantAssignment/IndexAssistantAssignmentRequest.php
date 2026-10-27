@@ -21,6 +21,12 @@ class IndexAssistantAssignmentRequest extends FormRequest
                 Rule::exists('academic_years', 'id'),
             ],
 
+            'educational_level_id' => [
+                'sometimes',
+                'integer',
+                Rule::exists('educational_levels', 'id'),
+            ],
+
             'employee_id' => [
                 'sometimes',
                 'integer',
