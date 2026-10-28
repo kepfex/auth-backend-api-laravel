@@ -7,6 +7,8 @@ use App\Http\Requests\Guardian\StoreGuardianRequest;
 use App\Http\Requests\Guardian\UpdateGuardianRequest;
 use App\Http\Resources\GuardianResource;
 use App\Models\Guardian;
+use App\Enums\InstitutionalCodeType;
+use App\Services\InstitutionalCodeService;
 use App\Models\Person;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,11 +26,11 @@ class GuardianController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreGuardianRequest $request)
+    public function store(StoreGuardianRequest $request, InstitutionalCodeService $codes)
     {
         $input = $request->validated();
 
-        $guardian = DB::transaction(function () use ($input) {
+        $guardian = DB::transaction(function () use ($input, $codes) {
 
             $person = isset($input['person_id'])
                 ? Person::query()->findOrFail($input['person_id'])
@@ -36,6 +38,7 @@ class GuardianController extends Controller
 
             return Guardian::create([
                 'person_id' => $person->id,
+                'guardian_code' => $codes->generate(InstitutionalCodeType::Guardian),
                 'occupation' => $input['occupation'] ?? null,
                 'is_active' => $input['is_active'] ?? true,
             ]);

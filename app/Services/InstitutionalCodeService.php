@@ -62,7 +62,26 @@ class InstitutionalCodeService
                 );
             }
 
-            $nextNumber = $sequence->last_number + 1;
+            // Compatibilidad con códigos históricos: usar siempre el mayor
+            // correlativo ya existente, sin renumerar personas ni sus relaciones.
+            $tableAndColumn = match ($type) {
+                InstitutionalCodeType::Student => ['students', 'student_code'],
+                InstitutionalCodeType::Employee => ['employees', 'employee_code'],
+                InstitutionalCodeType::Guardian => ['guardians', 'guardian_code'],
+            };
+            [$table, $column] = $tableAndColumn;
+            $prefixWithYear = $type->prefix() . substr((string) $year, -2);
+            $lastExisting = DB::table($table)
+                ->where($column, 'like', $prefixWithYear . '%')
+                ->pluck($column)
+                ->reduce(function (int $max, ?string $code) use ($prefixWithYear): int {
+                    if ($code !== null && preg_match('/^' . preg_quote($prefixWithYear, '/') . '([0-9]{5})$/i', $code, $matches)) {
+                        return max($max, (int) $matches[1]);
+                    }
+                    return $max;
+                }, 0);
+
+            $nextNumber = max((int) $sequence->last_number, $lastExisting) + 1;
 
             if ($nextNumber > self::MAX_SEQUENCE) {
                 throw new RuntimeException(

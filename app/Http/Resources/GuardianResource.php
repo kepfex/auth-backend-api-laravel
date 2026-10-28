@@ -17,6 +17,7 @@ class GuardianResource extends JsonResource
         return [
             'id' => $this->id,
             'person_id' => $this->person_id,
+            'guardian_code' => $this->guardian_code,
             'occupation' => $this->occupation,
             'is_active' => $this->is_active,
 

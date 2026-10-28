@@ -15,6 +15,7 @@ class Guardian extends Model
 
     protected $fillable = [
         'person_id',
+        'guardian_code',
         'occupation',
         'is_active',
     ];

@@ -40,12 +40,7 @@ class StoreStudentRequest extends FormRequest
                 'array',
             ],
 
-            'student_code' => [
-                'required',
-                'string',
-                'max:25',
-                Rule::unique('students', 'student_code'),
-            ],
+            'student_code' => ['prohibited'],
 
             'status' => [
                 'sometimes',
@@ -76,14 +71,6 @@ class StoreStudentRequest extends FormRequest
             }
 
             $data['person'] = $person;
-        }
-
-        // Conservamos por ahora el tratamiento actual
-        // del código de estudiante.
-        if ($this->has('student_code')) {
-            $data['student_code'] = strtoupper(
-                trim((string) $this->input('student_code'))
-            );
         }
 
         $this->merge($data);

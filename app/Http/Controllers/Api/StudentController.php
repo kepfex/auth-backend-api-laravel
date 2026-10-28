@@ -9,6 +9,8 @@ use App\Http\Requests\Student\UpdateStudentRequest;
 use App\Http\Resources\StudentResource;
 use App\Models\Person;
 use App\Models\Student;
+use App\Enums\InstitutionalCodeType;
+use App\Services\InstitutionalCodeService;
 use App\Services\Qr\QrCardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,11 +55,11 @@ class StudentController extends Controller
     /**
      * Almacena un estudiante recién creado junto con su código QR.
      */
-    public function store(StoreStudentRequest $request, QrCardService $qrCardService)
+    public function store(StoreStudentRequest $request, QrCardService $qrCardService, InstitutionalCodeService $codes)
     {
         $input = $request->validated();
 
-        $student = DB::transaction(function () use ($input, $qrCardService) {
+        $student = DB::transaction(function () use ($input, $qrCardService, $codes) {
 
             // 1. Obtener o registrar la persona.
             $person = isset($input['person_id'])
@@ -67,7 +69,7 @@ class StudentController extends Controller
             // 2. Registrar al estudiante.
             $student = Student::create([
                 'person_id' => $person->id,
-                'student_code' => $input['student_code'],
+                'student_code' => $codes->generate(InstitutionalCodeType::Student),
                 'status' => $input['status'] ?? 'activo',
             ]);
 
