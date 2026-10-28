@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\GradeSectionController;
 use App\Http\Controllers\Api\GuardianController;
+use App\Http\Controllers\Api\InstitutionSettingController;
 use App\Http\Controllers\Api\PositionController;
 use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\PersonController;
@@ -38,6 +39,15 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:api')->group(function () {
+    Route::get(
+        'institution-settings',
+        [InstitutionSettingController::class, 'show']
+    );
+
+    Route::put(
+        'institution-settings',
+        [InstitutionSettingController::class, 'update']
+    );
     Route::prefix('catalogs')->group(function () {
         Route::get(
             'guardian-relationships',
