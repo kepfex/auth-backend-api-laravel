@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\GradeSectionController;
 use App\Http\Controllers\Api\GuardianController;
+use App\Http\Controllers\Api\InstitutionalUserController;
 use App\Http\Controllers\Api\InstitutionSettingController;
 use App\Http\Controllers\Api\PositionController;
 use App\Http\Controllers\Api\SectionController;
@@ -275,6 +276,11 @@ Route::middleware('auth:api')->group(function () {
     Route::post(
         'attendance-calendar-exceptions/schedule-override',
         [AttendanceCalendarExceptionController::class, 'storeScheduleOverride',]
+    );
+
+    Route::post(
+        'institutional-users',
+        [InstitutionalUserController::class, 'store']
     );
 });
 
