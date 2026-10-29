@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -22,6 +23,8 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $fillable = [
         'name',
+        'person_id',
+        'is_active',
         'email',
         'password',
     ];
@@ -46,6 +49,7 @@ class User extends Authenticatable implements JWTSubject
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -61,6 +65,12 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims(): array
     {
         return [];
+    }
+
+    // La cuenta puede existir sin identidad institucional vinculada.
+    public function person(): BelongsTo
+    {
+        return $this->belongsTo(Person::class);
     }
 
     // Relaciones

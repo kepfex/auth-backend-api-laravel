@@ -34,6 +34,12 @@ class Person extends Model
         ];
     }
 
+    // Una identidad institucional tiene como máximo una cuenta de acceso.
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class);
+    }
+
     public function student(): HasOne
     {
         return $this->hasOne(Student::class);
