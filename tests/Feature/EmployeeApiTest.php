@@ -64,6 +64,8 @@ class EmployeeApiTest extends TestCase
             'person_id' => $person->id,
             'position_ids' => [$position->id],
         ]);
+        
+        $response->dump();
 
         $response
             ->assertCreated()

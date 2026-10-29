@@ -5,55 +5,53 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AcademicYearResource;
 use App\Models\AcademicYear;
-use App\Models\User;
+use App\Services\Auth\AvailableProfilesService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\JWTGuard;
 
 class AuthController extends Controller
 {
-    // Función para registrar un nuevo usuario
-    public function register(Request $request)
+    // Autenticación JWT: solo cuentas habilitadas.
+    public function login(Request $request, AvailableProfilesService $profiles)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
+        $credentials = $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+        $token = Auth::guard('api')->attempt([
+            ...$credentials,
+            'is_active' => true,
         ]);
-
-        return response()->json([
-            'message' => 'Usuario registrado correctamente',
-            'user' => $user
-        ], 201);
-    }
-
-    // Función para autenticar al usuario y generar un token JWT
-    public function login(Request $request)
-    {
-        $credentials = $request->only(['email', 'password']);
-
-        $token = Auth::attempt($credentials);
 
         if (!$token) {
+            return response()->json(['error' => 'Credenciales inválidas'], 401);
+        }
+
+        return $this->respondWithToken($token, $profiles);
+    }
+
+    // Mantener el JSON del usuario como raíz para no romper consumidores de /me.
+
+    public function me(AvailableProfilesService $profiles): JsonResponse
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::guard('api')->user();
+
+        if ($user === null) {
             return response()->json([
-                'error' => 'Credenciales inválidas'
+                'message' => 'No autenticado.',
             ], 401);
         }
 
-        return $this->respondWithToken($token);
+        return response()->json([
+            ...$user->toArray(),
+            'available_profiles' => $profiles->forUser($user),
+        ]);
     }
 
-    // Función que devuelve los datos del usuario autenticado
-    public function me ()
-    {
-        return response()->json(Auth::user());
-    }
 
     // Función para cerrar sesión y invalidar el token JWT
     public function logout()
@@ -66,22 +64,30 @@ class AuthController extends Controller
     }
 
     // Función para refrescar el token JWT
-    public function refresh()
-    {
-        return $this->respondWithToken(Auth::refresh());
+
+    public function refresh(
+        AvailableProfilesService $profiles
+    ): JsonResponse {
+        /** @var JWTGuard $guard */
+        $guard = Auth::guard('api');
+
+        $token = $guard->refresh();
+
+        return $this->respondWithToken($token, $profiles);
     }
 
     // Respuesta unificada: token + user + año académico activo
-    protected function respondWithToken(string $token, int $status = 200)
+    protected function respondWithToken(string $token, AvailableProfilesService $profiles, int $status = 200)
     {
         // Busca el año activo; si no hay ninguno, toma el más reciente por nombre
         $academicYear = AcademicYear::currentAcademicYear();
-        
+
         return response()->json([
             'token' => $token,
             'token_type' => 'bearer',
             'expires_in' => Auth::factory()->getTTL() * 60,
-            'user'       => Auth::user(),
+            'user'       => Auth::guard('api')->user(),
+            'available_profiles' => $profiles->forUser(Auth::guard('api')->user()),
             'academic_year' => $academicYear
                 ? new AcademicYearResource($academicYear)
                 : null,
